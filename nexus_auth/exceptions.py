@@ -26,5 +26,5 @@ class NoAssociatedUserError(APIException):
 
 class UserNotActiveError(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = "User is not active."
+    default_detail = "User associated with the email is not active."
     default_code = "user_not_active"
