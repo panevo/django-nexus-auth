@@ -19,11 +19,12 @@ pip install django-nexus-auth
 
 Add `nexus_auth` to your `INSTALLED_APPS` setting:
 
-````python
+```python
 INSTALLED_APPS = [
     ...
     'nexus_auth',
 ]
+```
 
 Include the URLs in your project's URL configuration:
 
@@ -50,8 +51,6 @@ provider = OAuthProvider.objects.create(
     tenant_id='your-tenant-id',  # Required for microsoft_tenant provider type
     is_active=True,
 )
-
-
 ```
 
 ## API Endpoints
@@ -59,6 +58,4 @@ provider = OAuthProvider.objects.create(
 - `GET /oauth/provider`: Get the active provider type.
 - `GET /oauth/url`: Get the authorization URL for the active provider. Initiates the OAuth flow.
 - `POST /oauth/exchange`: Exchange the authorization code retrieved from the authorization URL for JWT tokens for your Django application.
-```
 
-````
