@@ -15,15 +15,18 @@ def get_oauth_provider() -> Optional[OAuth2IdentityProvider]:
     Raises:
         MultipleActiveProvidersError: If multiple active providers are found.
     """
-    try:
-        provider = OAuthProvider.objects.get(is_active=True)
-        return IdentityProviderFactory.create_provider(
-            provider_type=provider.provider_type,
-            client_id=provider.client_id,
-            client_secret=provider.client_secret,
-            tenant_id=provider.tenant_id,
-        )
-    except OAuthProvider.DoesNotExist as exc:
-        raise NoActiveProviderError() from exc
-    except OAuthProvider.MultipleObjectsReturned as exc:
-        raise MultipleActiveProvidersError() from exc
+    providers = OAuthProvider.objects.filter(is_active=True)
+    
+    if not providers.exists():
+        raise NoActiveProviderError()
+    
+    if providers.count() > 1:
+        raise MultipleActiveProvidersError()
+    
+    provider = providers.first()  # Get the first provider safely
+    return IdentityProviderFactory.create_provider(
+        provider_type=provider.provider_type,
+        client_id=provider.client_id,
+        client_secret=provider.client_secret,
+        tenant_id=provider.tenant_id,
+    )

@@ -7,10 +7,9 @@ setup(
     version="0.1.0",
     packages=find_packages(),
     install_requires=[
-        "Django>=3.2",
-        "djangorestframework>=3.12.0",
-        "django-tenants>=3.4.0",
-        "djangorestframework-simplejwt>=3.1.1"
+        "Django>=4.2.19",
+        "djangorestframework>=3.14.0",
+        "djangorestframework-simplejwt>=5.4.0"
     ],
     author="Panevo Services Ltd.",
     author_email="dev@iotorq-lean.com",
