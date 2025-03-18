@@ -51,18 +51,14 @@ class OAuth2IdentityProvider(ABC):
         """
         pass
 
-    def build_auth_url(self, redirect_uri: str) -> str:
+    def build_auth_url(self) -> str:
         """Build the authorization URL for the IdP.
-
-        Args:
-            redirect_uri: URL to redirect to after authorization
 
         Returns:
             Full authorization URL to redirect the user to
         """
 
         query_params = {
-            "redirect_uri": redirect_uri,
             "client_id": self.client_id,
             "response_type": "code",
             "scope": "openid email",

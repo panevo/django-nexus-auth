@@ -1,32 +1,39 @@
-from typing import Optional
+from typing import Optional, Dict, List
 
-from nexus_auth.models import OAuthProvider
-from nexus_auth.providers.factory import IdentityProviderFactory
-from nexus_auth.exceptions import MultipleActiveProvidersError, NoActiveProviderError
+from nexus_auth.providers.factory import providers
+from nexus_auth.exceptions import NoActiveProviderError
 from nexus_auth.providers.base import OAuth2IdentityProvider
+from django.utils.translation import gettext_lazy as _
+from nexus_auth.settings import NexusAuthSettings
+
+settings = NexusAuthSettings()
 
 
-def get_oauth_provider() -> Optional[OAuth2IdentityProvider]:
-    """Get the active OAuth provider.
+def get_oauth_provider(provider_type: str) -> Optional[OAuth2IdentityProvider]:
+    """Get the OAuth provider object by provider type.
+
+    Args:
+        provider_type: Type of provider to get
 
     Returns:
         Optional[OAuth2IdentityProvider]: The active provider if found, None if no provider exists.
 
     Raises:
-        MultipleActiveProvidersError: If multiple active providers are found.
+        NoActiveProviderError: If no active provider is found.
     """
-    providers = OAuthProvider.objects.filter(is_active=True)
-    
-    if not providers.exists():
+    provider_config = settings.get_provider_config(provider_type)
+    if not provider_config:
         raise NoActiveProviderError()
-    
-    if providers.count() > 1:
-        raise MultipleActiveProvidersError()
-    
-    provider = providers.first()  # Get the first provider safely
-    return IdentityProviderFactory.create_provider(
-        provider_type=provider.provider_type,
-        client_id=provider.client_id,
-        client_secret=provider.client_secret,
-        tenant_id=provider.tenant_id,
+
+    return providers.get(
+        provider_type,
+        **provider_config,
     )
+
+def get_oauth_provider_types() -> List[str]:
+    """Get the list of provider types.
+
+    Returns:    
+        List[str]: List of provider types
+    """
+    return settings.get_provider_types()
