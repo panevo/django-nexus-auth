@@ -8,7 +8,7 @@ from rest_framework.permissions import AllowAny
 from nexus_auth.serializers import (
     OAuth2ExchangeSerializer,
 )
-
+from nexus_auth.exceptions import NoActiveProviderError
 import jwt
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
@@ -31,7 +31,11 @@ class OAuthProvidersView(APIView):
         Raises:
             NoActiveProviderError: If no active provider is found
         """
-        provider_types = nexus_settings.provider_types_handler()
+        provider_types = nexus_settings.provider_types_handler(request=request)
+
+        if not provider_types:
+            raise NoActiveProviderError()
+
         providers = []
         for provider_type in provider_types:
             provider = get_oauth_provider(provider_type)

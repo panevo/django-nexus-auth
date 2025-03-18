@@ -1,11 +1,10 @@
-from typing import Optional, Dict, List
+from typing import Optional, List
 
 from nexus_auth.providers.factory import providers
 from nexus_auth.exceptions import NoActiveProviderError
 from nexus_auth.providers.base import OAuth2IdentityProvider
-from django.utils.translation import gettext_lazy as _
 from nexus_auth.settings import nexus_settings
-
+from rest_framework.request import Request
 
 def get_oauth_provider(provider_type: str) -> Optional[OAuth2IdentityProvider]:
     """Get the OAuth provider object by provider type.

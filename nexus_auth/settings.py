@@ -32,16 +32,15 @@ class NexusAuthSettings:
     def get_provider_types(self) -> List[str]:
         return list(self._user_settings.get(self._FIELD_PROVIDERS, {}).keys())
 
-    def provider_types_handler(self) -> List[str]:
+    def provider_types_handler(self, **kwargs) -> List[str]:
         handler_path = self._user_settings.get(self._FIELD_HANDLER)
         if handler_path:
             handler = import_string(handler_path)  # Dynamically import function
-            return handler()  # Call the function
+            return handler(**kwargs)  # Call the function
         return []
 
 
 DEFAULTS = {
-    "MULTI_TENANT": False,
     "PROVIDERS": {},
 }
 
