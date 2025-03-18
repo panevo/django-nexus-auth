@@ -3,6 +3,7 @@ from nexus_auth.providers.microsoft import MicrosoftEntraTenantOAuth2ProviderBui
 from nexus_auth.providers.base import OAuth2IdentityProvider
 from typing import Optional
 
+
 class ObjectFactory:
     def __init__(self):
         self._builders = {}
@@ -25,5 +26,7 @@ class IdentityProviderFactory(ObjectFactory):
 
 
 providers = IdentityProviderFactory()
-providers.register_builder('google', GoogleOAuth2ProviderBuilder())
-providers.register_builder('microsoft_tenant', MicrosoftEntraTenantOAuth2ProviderBuilder())
+providers.register_builder("google", GoogleOAuth2ProviderBuilder())
+providers.register_builder(
+    "microsoft_tenant", MicrosoftEntraTenantOAuth2ProviderBuilder()
+)

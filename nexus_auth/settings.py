@@ -1,12 +1,12 @@
 from django.conf import settings
 from typing import Any, Optional, List, Dict
-
+from django.utils.module_loading import import_string
 
 class NexusAuthSettings:
     _FIELD_USER_SETTINGS = "_user_settings"
     _FIELD_NEXUS_AUTH = "NEXUS_AUTH"
     _FIELD_PROVIDERS = "PROVIDERS"
-    _FIELD_HANDLER = "GET_PROVIDER_HANDLER"
+    _FIELD_HANDLER = "PROVIDERS_HANDLER"
 
     def __init__(self, user_settings=None, defaults=None):
         self.defaults = defaults or {}
@@ -31,6 +31,13 @@ class NexusAuthSettings:
 
     def get_provider_types(self) -> List[str]:
         return list(self._user_settings.get(self._FIELD_PROVIDERS, {}).keys())
+
+    def provider_types_handler(self) -> List[str]:
+        handler_path = self._user_settings.get(self._FIELD_HANDLER)
+        if handler_path:
+            handler = import_string(handler_path)  # Dynamically import function
+            return handler()  # Call the function
+        return []
 
 
 DEFAULTS = {

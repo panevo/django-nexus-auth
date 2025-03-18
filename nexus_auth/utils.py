@@ -4,9 +4,7 @@ from nexus_auth.providers.factory import providers
 from nexus_auth.exceptions import NoActiveProviderError
 from nexus_auth.providers.base import OAuth2IdentityProvider
 from django.utils.translation import gettext_lazy as _
-from nexus_auth.settings import NexusAuthSettings
-
-settings = NexusAuthSettings()
+from nexus_auth.settings import nexus_settings
 
 
 def get_oauth_provider(provider_type: str) -> Optional[OAuth2IdentityProvider]:
@@ -21,7 +19,7 @@ def get_oauth_provider(provider_type: str) -> Optional[OAuth2IdentityProvider]:
     Raises:
         NoActiveProviderError: If no active provider is found.
     """
-    provider_config = settings.get_provider_config(provider_type)
+    provider_config = nexus_settings.get_provider_config(provider_type)
     if not provider_config:
         raise NoActiveProviderError()
 
@@ -30,10 +28,10 @@ def get_oauth_provider(provider_type: str) -> Optional[OAuth2IdentityProvider]:
         **provider_config,
     )
 
-def get_oauth_provider_types() -> List[str]:
+def get_provider_types() -> List[str]:
     """Get the list of provider types.
 
     Returns:    
         List[str]: List of provider types
     """
-    return settings.get_provider_types()
+    return nexus_settings.get_provider_types()

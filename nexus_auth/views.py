@@ -1,8 +1,8 @@
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
-from nexus_auth.utils import get_oauth_provider, get_oauth_provider_types
+from nexus_auth.settings import nexus_settings
+from nexus_auth.utils import get_oauth_provider
 from nexus_auth.exceptions import NoAssociatedUserError, UserNotActiveError
 from rest_framework.permissions import AllowAny
 from nexus_auth.serializers import (
@@ -31,7 +31,7 @@ class OAuthProvidersView(APIView):
         Raises:
             NoActiveProviderError: If no active provider is found
         """
-        provider_types = get_oauth_provider_types()
+        provider_types = nexus_settings.provider_types_handler()
         providers = []
         for provider_type in provider_types:
             provider = get_oauth_provider(provider_type)
