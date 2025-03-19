@@ -29,8 +29,8 @@ class NexusAuthSettings:
             return None
         return {k.lower(): v for k, v in provider_settings.items()}
 
-    def get_provider_types(self) -> List[str]:
-        return list(self._user_settings.get(self._FIELD_PROVIDERS, {}).keys())
+    def get_provider_settings(self) -> Dict[str, Dict[str, str]]:
+        return self._user_settings.get(self._FIELD_PROVIDERS, {})
 
     def provider_types_handler(self, **kwargs) -> List[str]:
         handler_path = self._user_settings.get(self._FIELD_HANDLER)

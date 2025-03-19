@@ -27,10 +27,10 @@ def get_oauth_provider(provider_type: str) -> Optional[OAuth2IdentityProvider]:
         **provider_config,
     )
 
-def get_provider_types() -> List[str]:
+def get_provider_types(request: Request) -> List[str]:
     """Get the list of provider types.
 
     Returns:    
         List[str]: List of provider types
     """
-    return nexus_settings.get_provider_types()
+    return list(nexus_settings.get_provider_settings().keys())
