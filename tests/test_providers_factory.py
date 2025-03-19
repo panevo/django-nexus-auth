@@ -1,8 +1,9 @@
 import pytest
 from nexus_auth.providers.base import OAuth2IdentityProvider
+from nexus_auth.providers.factory import IdentityProviderFactory, ObjectFactory
 from nexus_auth.providers.google import GoogleOAuth2ProviderBuilder
 from nexus_auth.providers.microsoft import MicrosoftEntraTenantOAuth2ProviderBuilder
-from nexus_auth.providers.factory import IdentityProviderFactory, ObjectFactory
+
 
 class MockBuilder:
     def __call__(self, **kwargs):

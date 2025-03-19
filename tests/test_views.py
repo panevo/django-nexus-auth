@@ -1,11 +1,17 @@
-import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
 from django.contrib.auth import get_user_model
 from django.urls import reverse
-from rest_framework.test import APIClient
-from rest_framework import status
+
+import pytest
+from nexus_auth.exceptions import (
+    NoActiveProviderError,
+    NoAssociatedUserError,
+    UserNotActiveError,
+)
 from nexus_auth.utils import get_oauth_provider
-from nexus_auth.exceptions import UserNotActiveError, NoAssociatedUserError, NoActiveProviderError
+from rest_framework import status
+from rest_framework.test import APIClient
 
 User = get_user_model()
 

@@ -1,6 +1,7 @@
-from nexus_auth.utils import get_provider_types, get_oauth_provider
-from nexus_auth.providers.microsoft import MicrosoftEntraTenantOAuth2Provider
 from nexus_auth.providers.google import GoogleOAuth2Provider
+from nexus_auth.providers.microsoft import MicrosoftEntraTenantOAuth2Provider
+from nexus_auth.utils import get_oauth_provider, get_provider_types
+
 
 def test_get_provider_types():
    

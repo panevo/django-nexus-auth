@@ -1,8 +1,8 @@
-import pytest
-from django.conf import settings
-from django.utils.module_loading import import_string
 from unittest.mock import patch
+
+import pytest
 from nexus_auth.settings import NexusAuthSettings
+
 
 @pytest.fixture
 def default_settings():

@@ -1,7 +1,9 @@
-import pytest
 from unittest.mock import patch
+
+import pytest
 from nexus_auth.exceptions import MissingIDTokenError
 from nexus_auth.providers.base import OAuth2IdentityProvider
+
 
 class MockOAuth2Provider(OAuth2IdentityProvider):
     def get_authorization_url(self):
