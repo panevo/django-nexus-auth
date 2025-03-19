@@ -1,6 +1,4 @@
-from setuptools import setup, find_packages
-import os
-
+from setuptools import find_packages, setup
 
 setup(
     name="django-nexus-auth",
@@ -9,7 +7,7 @@ setup(
     install_requires=[
         "Django>=4.2.19",
         "djangorestframework>=3.14.0",
-        "djangorestframework-simplejwt>=5.4.0"
+        "djangorestframework-simplejwt>=5.4.0",
     ],
     author="Panevo Services Ltd.",
     author_email="dev@iotorq-lean.com",

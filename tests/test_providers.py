@@ -1,43 +1,45 @@
 import pytest
 from unittest.mock import patch
-from nexus_auth.providers.base import OAuth2IdentityProvider
 from nexus_auth.exceptions import MissingIDTokenError
+from nexus_auth.providers.base import OAuth2IdentityProvider
 
-class MockOAuth2IdentityProvider(OAuth2IdentityProvider):
+class MockOAuth2Provider(OAuth2IdentityProvider):
     def get_authorization_url(self):
-        return "https://example.com/auth"
+        return "https://mockidp.com/auth"
 
     def get_token_url(self):
-        return "https://example.com/token"
+        return "https://mockidp.com/token"
 
-@pytest.fixture
-def mock_provider():
-    return MockOAuth2IdentityProvider(client_id='test_id', client_secret='test_secret', tenant_id='test_tenant')
+class TestMockOAuth2Provider:
+    @pytest.fixture
+    def provider(self):
+        return MockOAuth2Provider(client_id="test_client", client_secret="test_secret")
 
-def test_build_auth_url(mock_provider):
-    """Test building the authorization URL."""
-    auth_url = mock_provider.build_auth_url(redirect_uri='https://redirect.com')
-    assert auth_url.startswith("https://example.com/auth?")
-    assert "redirect_uri=https%3A%2F%2Fredirect.com" in auth_url
+    def test_get_authorization_url(self, provider):
+        assert provider.get_authorization_url() == "https://mockidp.com/auth"
 
-@patch('requests.post')
-def test_fetch_id_token(mock_post, mock_provider):
-    """Test fetching ID token."""
-    mock_response = mock_post.return_value
-    mock_response.json.return_value = {'id_token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9'}
-    mock_response.raise_for_status = lambda: None
+    def test_get_token_url(self, provider):
+        assert provider.get_token_url() == "https://mockidp.com/token"
 
-    id_token = mock_provider.fetch_id_token(
-        authorization_code='auth_code',
-        code_verifier='code_verifier',
-        redirect_uri='https://redirect.com'
-    )
-    assert id_token == 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9'
+    def test_build_auth_url(self, provider):
+        auth_url = provider.build_auth_url()
+        assert "https://mockidp.com/auth" in auth_url
+        assert "client_id=test_client" in auth_url
+        assert "response_type=code" in auth_url
+        assert "scope=openid+email" in auth_url
 
-    mock_response.json.return_value = {}
-    with pytest.raises(MissingIDTokenError):
-        mock_provider.fetch_id_token(
-            authorization_code='auth_code',
-            code_verifier='code_verifier',
-            redirect_uri='https://redirect.com'
-        )
+    @patch("requests.post")
+    def test_fetch_id_token_success(self, mock_post, provider):
+        mock_post.return_value.status_code = 200
+        mock_post.return_value.json.return_value = {"id_token": 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9'}
+
+        token = provider.fetch_id_token("auth_code", "verifier", "https://redirect.url")
+        assert token == "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+
+    @patch("requests.post")
+    def test_fetch_id_token_missing(self, mock_post, provider):
+        mock_post.return_value.status_code = 200
+        mock_post.return_value.json.return_value = {}
+
+        with pytest.raises(MissingIDTokenError):
+            provider.fetch_id_token("auth_code", "verifier", "https://redirect.url")

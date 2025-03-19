@@ -1,10 +1,12 @@
-from typing import Optional, List
+from typing import List, Optional
 
-from nexus_auth.providers.factory import providers
+from rest_framework.request import Request
+
 from nexus_auth.exceptions import NoActiveProviderError
 from nexus_auth.providers.base import OAuth2IdentityProvider
+from nexus_auth.providers.factory import providers
 from nexus_auth.settings import nexus_settings
-from rest_framework.request import Request
+
 
 def get_oauth_provider(provider_type: str) -> Optional[OAuth2IdentityProvider]:
     """Get the OAuth provider object by provider type.
@@ -27,10 +29,11 @@ def get_oauth_provider(provider_type: str) -> Optional[OAuth2IdentityProvider]:
         **provider_config,
     )
 
+
 def get_provider_types(request: Request) -> List[str]:
     """Get the list of provider types.
 
-    Returns:    
+    Returns:
         List[str]: List of provider types
     """
     return list(nexus_settings.get_provider_settings().keys())

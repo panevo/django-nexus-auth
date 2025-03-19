@@ -1,12 +1,11 @@
 import pytest
-from rest_framework.test import APIClient
-from nexus_auth.models import OAuthProvider, ProviderType
-from unittest.mock import patch
-import jwt
+from unittest.mock import patch, MagicMock
 from django.contrib.auth import get_user_model
-from django.contrib.auth.signals import user_logged_in
-from unittest.mock import MagicMock
 from django.urls import reverse
+from rest_framework.test import APIClient
+from rest_framework import status
+from nexus_auth.utils import get_oauth_provider
+from nexus_auth.exceptions import UserNotActiveError, NoAssociatedUserError, NoActiveProviderError
 
 User = get_user_model()
 
@@ -14,122 +13,58 @@ User = get_user_model()
 def api_client():
     return APIClient()
 
-@pytest.mark.django_db
-@pytest.mark.parametrize('provider_type', [ProviderType.GOOGLE, ProviderType.MICROSOFT_TENANT])
-def test_oauth_provider_view(api_client, provider_type):
-    """Test getting the active provider type."""
-    OAuthProvider.objects.create(provider_type=provider_type, client_id='test_id', client_secret='test_secret', is_active=True)
-    response = api_client.get(reverse('oauth-provider'))
-    assert response.status_code == 200
-    assert 'provider_type' in response.data
-    assert response.data['provider_type'] == provider_type
+@pytest.fixture
+def active_user(db):
+    return User.objects.create_user(email="active@example.com", password="password", username="user_is_active", is_active=True)
 
+@pytest.fixture
+def mock_fetch_id_token():
+    with patch("nexus_auth.utils.get_oauth_provider") as mock_provider, \
+         patch("jwt.decode", return_value={"email": "active@example.com"}) as mock_jwt_decode:
+        provider = get_oauth_provider("google")
+        provider.fetch_id_token = MagicMock(return_value="fake_id_token")
+        mock_provider.return_value = provider
+        yield mock_provider, mock_jwt_decode
 
-@pytest.mark.django_db
-def test_oauth_url_view_valid_request(api_client):
-    """Test getting the authorization URL with a valid request."""
-    OAuthProvider.objects.create(provider_type=ProviderType.GOOGLE, client_id='test_id', client_secret='test_secret', is_active=True)
-    response = api_client.get(reverse('oauth-url'), {'redirect_uri': 'https://redirect.com'})
-    assert response.status_code == 200
-    assert 'auth_url' in response.data
-    assert response.data['auth_url'].startswith('https://accounts.google.com/o/oauth2/v2/auth')
-    assert 'redirect_uri=https%3A%2F%2Fredirect.com' in response.data['auth_url']
-    assert 'client_id=test_id' in response.data['auth_url']
-    assert 'response_type=code' in response.data['auth_url']
-    assert 'scope=openid+email' in response.data['auth_url']
+def test_oauth_providers_success(api_client):
+    response = api_client.get(reverse("oauth-provider"))
+    assert response.status_code == status.HTTP_200_OK
+    assert "providers" in response.data
 
-@pytest.mark.django_db
-def test_oauth_url_view_invalid_request(api_client):
-    """Test getting the authorization URL with an invalid request."""
-    OAuthProvider.objects.create(provider_type=ProviderType.GOOGLE, client_id='test_id', client_secret='test_secret', is_active=True)
-    response = api_client.get(reverse('oauth-url'))
-    assert response.status_code == 400
-    assert 'redirect_uri' in response.data
-    assert 'This field is required.' in response.data['redirect_uri']
+def test_oauth_providers_no_active_provider(api_client):
+    with patch("nexus_auth.settings.nexus_settings.provider_types_handler", side_effect=NoActiveProviderError):
+        response = api_client.get(reverse("oauth-provider"))
+    assert response.status_code == NoActiveProviderError.status_code
+    assert response.data["detail"] == NoActiveProviderError.default_detail
 
-@pytest.mark.django_db
-def test_oauth_url_view_no_active_provider(api_client):
-    """Test getting the authorization URL with no active provider."""
-    response = api_client.get(reverse('oauth-url'), {'redirect_uri': 'https://redirect.com'})
-    assert response.status_code == 404
-    assert 'detail' in response.data
-    assert 'No active identity provider found.' in str(response.data['detail'])
+def test_oauth_exchange_success(api_client, active_user, mock_fetch_id_token):
+    response = api_client.post(reverse("oauth-exchange", args=["google"]), data={
+        "code": "auth_code",
+        "code_verifier": "verifier",
+        "redirect_uri": "https://app.com/callback"
+    })
+    assert response.status_code == status.HTTP_200_OK
+    assert "access" in response.data
+    assert "refresh" in response.data
 
 @pytest.mark.django_db
-@patch('requests.post')
-def test_oauth_exchange_view_no_associated_user(mock_post, api_client):
-    """Test exchanging the authorization code with the active provider for JWT tokens."""
-    OAuthProvider.objects.create(provider_type=ProviderType.GOOGLE, client_id='test_id', client_secret='test_secret', is_active=True)
-    
-    email = 'test@example.com'
-    id_token = jwt.encode({'email': email}, 'test_secret', algorithm='HS256')
-    
-    mock_post.return_value.json.return_value = {'id_token': id_token}
-    mock_post.return_value.raise_for_status = lambda: None
-
-    response = api_client.post(reverse('oauth-exchange'), {'code': 'test_code', 'code_verifier': 'test_verifier', 'redirect_uri': 'https://redirect.com'})
-
-    # Check that no user exists with the email
-    assert response.status_code == 404
-    assert 'detail' in response.data
-    assert 'No user associated with the provided email.' in str(response.data['detail'])
-
+def test_oauth_exchange_no_user(api_client, mock_fetch_id_token):
+    response = api_client.post(reverse("oauth-exchange", args=["google"]), data={
+        "code": "auth_code",
+        "code_verifier": "verifier",
+        "redirect_uri": "https://app.com/callback"
+    })
+    assert response.status_code == NoAssociatedUserError.status_code
+    assert response.data["detail"] == NoAssociatedUserError.default_detail
 
 @pytest.mark.django_db
-@patch('requests.post')
-def test_oauth_exchange_view_user_not_active(mock_post, api_client):
-    """Test exchanging the authorization code with the active provider for JWT tokens."""
-    OAuthProvider.objects.create(provider_type=ProviderType.GOOGLE, client_id='test_id', client_secret='test_secret', is_active=True)
-    
-    email = 'test@example.com'
-    id_token = jwt.encode({'email': email}, 'test_secret', algorithm='HS256')
-    
-    mock_post.return_value.json.return_value = {'id_token': id_token}
-    mock_post.return_value.raise_for_status = lambda: None
-
-    User.objects.create_user(email=email, password='test_password', username=email, is_active=False)
-
-    response = api_client.post(reverse('oauth-exchange'), {'code': 'test_code', 'code_verifier': 'test_verifier', 'redirect_uri': 'https://redirect.com'})
-
-    assert response.status_code == 400
-    assert 'detail' in response.data
-    assert 'User associated with the email is not active.' in str(response.data['detail'])
-
-@pytest.mark.django_db
-@patch('requests.post')
-def test_oauth_exchange_view_success(mock_post, api_client):
-    """Test exchanging the authorization code with the active provider for JWT tokens."""
-    OAuthProvider.objects.create(
-        provider_type=ProviderType.GOOGLE, client_id='test_id', client_secret='test_secret', is_active=True
-    )
-
-    email = 'test@example.com'
-    id_token = jwt.encode({'email': email}, 'test_secret', algorithm='HS256')
-    
-    mock_post.return_value.json.return_value = {'id_token': id_token}
-    mock_post.return_value.raise_for_status = lambda: None
-
-    User.objects.create_user(email=email, password='test_password', username=email, is_active=True)
-
-    response = api_client.post(
-        reverse('oauth-exchange'),
-        {'code': 'test_code', 'code_verifier': 'test_verifier', 'redirect_uri': 'https://redirect.com'}
-    )
-
-    assert response.status_code == 200
-    assert 'refresh' in response.data
-    assert 'access' in response.data
-
-    mock_post.assert_called_once_with(
-        'https://www.googleapis.com/oauth2/v4/token',
-        data={
-            'grant_type': 'authorization_code',
-            'code': 'test_code',
-            'redirect_uri': 'https://redirect.com',
-            'client_id': 'test_id',
-            'client_secret': 'test_secret',
-            'code_verifier': 'test_verifier',
-        },
-        timeout=10,
-        headers={'Content-Type': 'application/x-www-form-urlencoded'},
-    )
+def test_oauth_exchange_inactive_user(api_client, active_user, mock_fetch_id_token):
+    active_user.is_active = False
+    active_user.save()
+    response = api_client.post(reverse("oauth-exchange", args=["google"]), data={
+        "code": "auth_code",
+        "code_verifier": "verifier",
+        "redirect_uri": "https://app.com/callback"
+    })
+    assert response.status_code == UserNotActiveError.status_code
+    assert response.data["detail"] == UserNotActiveError.default_detail

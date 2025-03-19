@@ -1,6 +1,8 @@
+from typing import Any, Dict, List, Optional
+
 from django.conf import settings
-from typing import Any, Optional, List, Dict
 from django.utils.module_loading import import_string
+
 
 class NexusAuthSettings:
     _FIELD_USER_SETTINGS = "_user_settings"

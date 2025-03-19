@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from typing import Dict, Optional
-
 from urllib.parse import urlencode
 
 import requests
@@ -57,7 +56,6 @@ class OAuth2IdentityProvider(ABC):
         Returns:
             Full authorization URL to redirect the user to
         """
-
         query_params = {
             "client_id": self.client_id,
             "response_type": "code",

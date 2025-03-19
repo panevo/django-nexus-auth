@@ -30,3 +30,18 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
 }
+
+NEXUS_AUTH = {
+    "PROVIDERS": {
+        "microsoft_tenant": {
+            "client_id": "test_client_id",
+            "client_secret": "test_client_secret",
+            "tenant_id": "test_tenant_id",
+        },
+        "google": {
+            "client_id": "test_client_id",
+            "client_secret": "test_client_secret",
+        },
+    },
+    "PROVIDERS_HANDLER": "nexus_auth.utils.get_provider_types",
+}

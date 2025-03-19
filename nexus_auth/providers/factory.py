@@ -1,7 +1,8 @@
+from typing import Optional
+
+from nexus_auth.providers.base import OAuth2IdentityProvider
 from nexus_auth.providers.google import GoogleOAuth2ProviderBuilder
 from nexus_auth.providers.microsoft import MicrosoftEntraTenantOAuth2ProviderBuilder
-from nexus_auth.providers.base import OAuth2IdentityProvider
-from typing import Optional
 
 
 class ObjectFactory:

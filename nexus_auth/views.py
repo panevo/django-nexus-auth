@@ -1,18 +1,23 @@
+from django.contrib.auth import get_user_model
+from django.contrib.auth.signals import user_logged_in
+
+import jwt
+from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from nexus_auth.settings import nexus_settings
-from nexus_auth.utils import get_oauth_provider
-from nexus_auth.exceptions import NoAssociatedUserError, UserNotActiveError
-from rest_framework.permissions import AllowAny
+from rest_framework_simplejwt.tokens import RefreshToken
+
+from nexus_auth.exceptions import (
+    NoActiveProviderError,
+    NoAssociatedUserError,
+    UserNotActiveError,
+)
 from nexus_auth.serializers import (
     OAuth2ExchangeSerializer,
 )
-from nexus_auth.exceptions import NoActiveProviderError
-import jwt
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth import get_user_model
-from django.contrib.auth.signals import user_logged_in
+from nexus_auth.settings import nexus_settings
+from nexus_auth.utils import get_oauth_provider
 
 User = get_user_model()
 
@@ -43,6 +48,7 @@ class OAuthProvidersView(APIView):
             providers.append({"type": provider_type, "auth_url": auth_url})
 
         return Response({"providers": providers}, status=200)
+
 
 class OAuthExchangeView(APIView):
     """View to exchange the authorization code with the active provider for JWT tokens."""
@@ -89,4 +95,6 @@ class OAuthExchangeView(APIView):
         # Trigger user_logged_in signal
         user_logged_in.send(sender=self.__class__, request=request, user=user)
 
-        return Response({"refresh": str(refresh_token), "access": str(access_token)}, status=200)
+        return Response(
+            {"refresh": str(refresh_token), "access": str(access_token)}, status=200
+        )

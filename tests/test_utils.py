@@ -1,63 +1,17 @@
-import pytest
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
-from nexus_auth.utils import get_oauth_provider
-from nexus_auth.models import OAuthProvider
-from nexus_auth.exceptions import NoActiveProviderError, MultipleActiveProvidersError
+from nexus_auth.utils import get_provider_types, get_oauth_provider
+from nexus_auth.providers.microsoft import MicrosoftEntraTenantOAuth2Provider
+from nexus_auth.providers.google import GoogleOAuth2Provider
 
-@pytest.mark.django_db
-def test_get_oauth_provider_success():
-    """Get active provider"""
-    OAuthProvider.objects.create(
-        provider_type='microsoft_tenant',
-        client_id='test_client_id',
-        client_secret='test_client_secret',
-        tenant_id='test_tenant_id',
-        is_active=True
-    )
+def test_get_provider_types():
+   
+    provider_types = get_provider_types(None) 
+    assert provider_types == ['microsoft_tenant', 'google']
 
-    provider = get_oauth_provider()
-
+def test_get_oauth_provider():
+    provider = get_oauth_provider('microsoft_tenant')
     assert provider is not None
-    assert provider.provider_type == 'microsoft_tenant'
-    assert provider.client_id == 'test_client_id'
-    assert provider.client_secret == 'test_client_secret'
-    assert provider.tenant_id == 'test_tenant_id'
+    assert isinstance(provider, MicrosoftEntraTenantOAuth2Provider)
 
-
-@pytest.mark.django_db
-def test_get_oauth_provider_no_active_provider():
-    """Get active provider when no active provider exists"""
-    OAuthProvider.objects.create(
-        provider_type='microsoft_tenant',
-        client_id='test_client_id',
-        client_secret='test_client_secret',
-        tenant_id='test_tenant_id',
-        is_active=False
-    )
-
-    with pytest.raises(NoActiveProviderError):
-        get_oauth_provider()
-
-
-@pytest.mark.django_db
-def test_get_oauth_provider_multiple_active_providers():
-    """Get active provider when multiple active providers exist"""
-    # Bulk create providers
-    OAuthProvider.objects.bulk_create([
-        OAuthProvider(
-            provider_type='microsoft_tenant',
-            client_id='test_client_id',
-            client_secret='test_client_secret',
-            tenant_id='test_tenant_id',
-            is_active=True
-        ),
-        OAuthProvider(
-            provider_type='google', 
-            client_id='test_client_id',
-            client_secret='test_client_secret',
-            is_active=True
-        )
-    ]) 
-
-    with pytest.raises(MultipleActiveProvidersError):
-        get_oauth_provider()
+    provider = get_oauth_provider('google')
+    assert provider is not None
+    assert isinstance(provider, GoogleOAuth2Provider)
