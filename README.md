@@ -17,6 +17,25 @@ pip install django-nexus-auth
 
 ## Configuration
 
+Define the configuration in your `settings.py` file:
+
+```python
+NEXUS_AUTH = {
+    "PROVIDERS": {
+        "microsoft_tenant": {
+            "client_id": "your-client-id",
+            "client_secret": "your-client-secret",
+            "tenant_id": "your-tenant-id",
+        },
+        "google": {
+            "client_id": "your-client-id",
+            "client_secret": "your-client-secret",
+        },
+    },
+    "PROVIDERS_HANDLER": "nexus_auth.utils.get_provider_types",
+}
+```
+
 Add `nexus_auth` to your `INSTALLED_APPS` setting:
 
 ```python
@@ -37,24 +56,64 @@ urlpatterns = [
 ]
 ```
 
-## Usage
-
-Create and configure an OAuth provider:
-
-```python
-from nexus_auth.models import OAuthProvider
-
-provider = OAuthProvider.objects.create(
-    provider_type='microsoft_tenant',
-    client_id='your-client-id',
-    client_secret='your-client-secret',
-    tenant_id='your-tenant-id',  # Required for microsoft_tenant provider type
-    is_active=True,
-)
-```
-
 ## API Endpoints
 
-- `GET /oauth/provider`: Get the active provider type.
-- `GET /oauth/url`: Get the authorization URL for the active provider. Initiates the OAuth flow.
+- `GET /oauth/providers`: Get the active provider types and the corresponding authorization URLs.
 - `POST /oauth/exchange`: Exchange the authorization code retrieved from the authorization URL for JWT tokens for your Django application.
+
+## Multi-Tenant Support
+
+The package supports multi-tenant providers by modifying the `PROVIDERS` and `PROVIDERS_HANDLER` settings.
+
+```python
+NEXUS_AUTH = {
+    "PROVIDERS": {
+        "tenantA": {
+            "microsoft_tenant": {
+                    "client_id": "your-client-id",
+                    "client_secret": "your-client-secret",
+                "tenant_id": "your-tenant-id",
+            },
+            "google": {
+                "client_id": "your-client-id",
+                "client_secret": "your-client-secret",
+            },
+        },
+        "tenantB": {
+            "microsoft_tenant": {
+                "client_id": "your-client-id",
+                "client_secret": "your-client-secret",
+                "tenant_id": "your-tenant-id",
+            },
+            "google": {
+                "client_id": "your-client-id",
+                "client_secret": "your-client-secret",
+            },
+        },
+    },
+}
+```
+
+Define your own handler function for getting the provider types.
+
+```python
+from nexus_auth.settings import nexus_settings
+
+def your_handler_function(request):
+    tenant = request.headers.get("X-Tenant")
+
+    if tenant:
+        provider_settings = nexus_settings.get_provider_settings().get(tenant)
+        if provider_settings:
+            return list(provider_settings.keys())
+
+    return []
+```
+
+Add the handler function to your `settings.py` file:
+
+```python
+NEXUS_AUTH = {
+    "PROVIDERS_HANDLER": "<your_handler_function>",
+}
+```
