@@ -41,7 +41,7 @@ def test_oauth_providers_success(api_client):
     assert response.data["providers"][1]["type"] == "google"
 
 def test_oauth_providers_no_active_provider(api_client):
-    with patch("nexus_auth.settings.nexus_settings.get_provider_config_handler", side_effect=NoActiveProviderError):
+    with patch("nexus_auth.settings.nexus_settings.get_provider_config", side_effect=NoActiveProviderError):
         response = api_client.get(reverse("oauth-provider"))
     assert response.status_code == NoActiveProviderError.status_code
     assert response.data["detail"] == NoActiveProviderError.default_detail

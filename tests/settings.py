@@ -43,5 +43,5 @@ NEXUS_AUTH = {
             "client_secret": "test_client_secret",
         },
     },
-    "PROVIDERS_HANDLER": "nexus_auth.utils.provider_config_handler",
+    "PROVIDERS_HANDLER": "nexus_auth.utils.load_provider_config",
 }

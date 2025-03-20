@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 from django.conf import settings
 from django.utils.module_loading import import_string
@@ -24,8 +24,8 @@ class NexusAuthSettings:
             f"'{self.__class__.__name__}' object has no attribute '{attr}'"
         )
 
-    def get_provider_config(self) -> Dict[str, Dict[str, str]]:
-        """Get the provider configuration.
+    def providers_setting(self) -> Dict[str, Dict[str, str]]:
+        """Get the PROVIDERS setting.
 
         Returns:
             Dict[str, Dict[str, str]]: Provider configuration
@@ -35,14 +35,14 @@ class NexusAuthSettings:
             raise NoActiveProviderError()
         return provider_config
 
-    def get_provider_config_handler(self, **kwargs) -> List[str]:
+    def get_provider_config(self, **kwargs) -> Dict[str, Dict[str, str]]:
         """Call the provider configuration handler.
 
         Args:
             **kwargs: Additional keyword arguments to pass to the handler
 
         Returns:
-            List[str]: List of provider types
+            Dict[str, Dict[str, str]]: Provider configuration
         """
         handler_path = self._user_settings.get(self._FIELD_HANDLER)
         if handler_path:

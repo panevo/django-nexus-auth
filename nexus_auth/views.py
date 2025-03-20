@@ -36,7 +36,7 @@ class OAuthProvidersView(APIView):
         Raises:
             NoActiveProviderError: If no active provider is found
         """
-        providers_config = nexus_settings.get_provider_config_handler(request=request)
+        providers_config = nexus_settings.get_provider_config(request=request)
         provider_types = list(providers_config.keys())
         if not provider_types:
             raise NoActiveProviderError()

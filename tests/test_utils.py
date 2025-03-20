@@ -1,6 +1,6 @@
 from nexus_auth.providers.google import GoogleOAuth2Provider
 from nexus_auth.providers.microsoft import MicrosoftEntraTenantOAuth2Provider
-from nexus_auth.utils import get_oauth_provider, provider_config_handler
+from nexus_auth.utils import get_oauth_provider, load_provider_config
 from unittest.mock import MagicMock
 
 def test_get_oauth_provider():
@@ -14,9 +14,9 @@ def test_get_oauth_provider():
     assert isinstance(provider, GoogleOAuth2Provider)
 
 
-def test_provider_config_handler():
-    provider_types = provider_config_handler(None)
-    assert provider_types == {
+def test_default_load_provider_config():
+    config = load_provider_config(None)
+    assert config == {
         "microsoft_tenant": {
             "client_id": "test_client_id",
             "client_secret": "test_client_secret",

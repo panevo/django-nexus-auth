@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Dict, Optional
 
 from rest_framework.request import Request
 
@@ -22,7 +22,7 @@ def get_oauth_provider(
     Raises:
         NoActiveProviderError: If no active provider is found.
     """
-    config = nexus_settings.get_provider_config_handler(request=request)
+    config = nexus_settings.get_provider_config(request=request)
     provider = config.get(provider_type)
     if not provider:
         raise NoActiveProviderError()
@@ -35,13 +35,13 @@ def get_oauth_provider(
     )
 
 
-def provider_config_handler(request: Request) -> List[str]:
-    """Get the list of provider types.
+def load_provider_config(request: Request) -> Dict[str, Dict[str, str]]:
+    """Load provider configuration.
 
     Args:
         request: HTTP request
 
     Returns:
-        List[str]: List of provider types
+        Dict[str, Dict[str, str]]: Provider configuration
     """
-    return nexus_settings.get_provider_config()
+    return nexus_settings.providers_setting()

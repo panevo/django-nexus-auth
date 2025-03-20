@@ -17,7 +17,7 @@ def default_settings():
                 "client_secret": "test_client_secret",
             },
         },
-        "PROVIDERS_HANDLER": "nexus_auth.utils.provider_config_handler",
+        "PROVIDERS_HANDLER": "nexus_auth.utils.load_provider_config",
     }
 
 @pytest.fixture
@@ -25,7 +25,7 @@ def nexus_auth_settings(default_settings):
     return NexusAuthSettings(user_settings=default_settings)
 
 def test_default_get_provider_config(nexus_auth_settings):
-    config = nexus_auth_settings.get_provider_config()
+    config = nexus_auth_settings.providers_setting()
     assert config == {
         "microsoft_tenant": {
             "client_id": "test_client_id",
