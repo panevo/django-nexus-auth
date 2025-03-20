@@ -2,14 +2,15 @@ from typing import Any, Dict
 
 from django.conf import settings
 from django.utils.module_loading import import_string
-from nexus_auth.exceptions import NoActiveProviderError
+from nexus_auth.exceptions import NoActiveProviderError, NoRegisteredBuilderError
 
 
 class NexusAuthSettings:
     _FIELD_USER_SETTINGS = "_user_settings"
     _FIELD_NEXUS_AUTH = "NEXUS_AUTH"
-    _FIELD_PROVIDERS = "PROVIDERS"
+    _FIELD_PROVIDERS = "PROVIDERS_CONFIG"
     _FIELD_HANDLER = "PROVIDERS_HANDLER"
+    _FIELD_BUILDERS = "PROVIDER_BUILDERS"
 
     def __init__(self, user_settings=None, defaults=None):
         self.defaults = defaults or {}
@@ -24,8 +25,8 @@ class NexusAuthSettings:
             f"'{self.__class__.__name__}' object has no attribute '{attr}'"
         )
 
-    def providers_setting(self) -> Dict[str, Dict[str, str]]:
-        """Get the PROVIDERS setting.
+    def providers_config(self) -> Dict[str, Dict[str, str]]:
+        """Get the PROVIDERS_CONFIG setting.
 
         Returns:
             Dict[str, Dict[str, str]]: Provider configuration
@@ -50,9 +51,21 @@ class NexusAuthSettings:
             return handler(**kwargs)  # Call the function
         return None
 
+    def get_provider_builders(self) -> Dict[str, str]:
+        """Get the PROVIDER_BUILDERS setting.
+
+        Returns:
+            Dict[str, str]: Builder configuration
+        """
+        builder_config = self._user_settings.get(self._FIELD_BUILDERS)
+        if not builder_config:
+            raise NoRegisteredBuilderError()
+        return builder_config
+
 
 DEFAULTS = {
-    "PROVIDERS": {},
+    "PROVIDERS_CONFIG": {},
+    "PROVIDER_BUILDERS": {},
 }
 
 nexus_settings = NexusAuthSettings(user_settings=None, defaults=DEFAULTS)

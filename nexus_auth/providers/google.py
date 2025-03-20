@@ -1,4 +1,4 @@
-from nexus_auth.providers.base import OAuth2IdentityProvider
+from nexus_auth.providers.base import OAuth2IdentityProvider, ProviderBuilder
 
 
 class GoogleOAuth2Provider(OAuth2IdentityProvider):
@@ -9,10 +9,7 @@ class GoogleOAuth2Provider(OAuth2IdentityProvider):
         return "https://www.googleapis.com/oauth2/v4/token"
 
 
-class GoogleOAuth2ProviderBuilder:
-    def __init__(self):
-        self._instance = None
-
+class GoogleOAuth2ProviderBuilder(ProviderBuilder):
     def __call__(self, client_id, client_secret, **_ignored):
         if self._instance is None:
             self._instance = GoogleOAuth2Provider(client_id, client_secret)

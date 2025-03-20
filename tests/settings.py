@@ -32,7 +32,7 @@ REST_FRAMEWORK = {
 }
 
 NEXUS_AUTH = {
-    "PROVIDERS": {
+    "PROVIDERS_CONFIG": {
         "microsoft_tenant": {
             "client_id": "test_client_id",
             "client_secret": "test_client_secret",
@@ -42,6 +42,10 @@ NEXUS_AUTH = {
             "client_id": "test_client_id",
             "client_secret": "test_client_secret",
         },
+    },
+    "PROVIDER_BUILDERS": {
+        "google": "nexus_auth.providers.google.GoogleOAuth2ProviderBuilder",
+        "microsoft_tenant": "nexus_auth.providers.microsoft.MicrosoftEntraTenantOAuth2ProviderBuilder",
     },
     "PROVIDERS_HANDLER": "nexus_auth.utils.load_provider_config",
 }

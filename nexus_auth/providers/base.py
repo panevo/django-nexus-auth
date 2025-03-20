@@ -103,3 +103,14 @@ class OAuth2IdentityProvider(ABC):
             raise MissingIDTokenError()
 
         return token_data["id_token"]
+
+
+class ProviderBuilder(ABC):
+    """Base class for provider builders."""
+
+    def __init__(self, **kwargs):
+        self._instance = None
+
+    @abstractmethod
+    def __call__(self, **kwargs):
+        pass

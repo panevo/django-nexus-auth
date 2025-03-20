@@ -17,6 +17,13 @@ class NoActiveProviderError(APIException):
     default_code = "no_active_provider"
 
 
+class NoRegisteredBuilderError(ImproperlyConfigured):
+    def __init__(self) -> None:
+        super().__init__(
+            "PROVIDER_BUILDERS setting is empty. Please register at least one builder."
+        )
+
+
 class MissingIDTokenError(APIException):
     status_code = status.HTTP_404_NOT_FOUND
     default_detail = "No ID token received from identity provider."

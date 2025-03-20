@@ -1,8 +1,8 @@
 from typing import Optional
 
 from nexus_auth.providers.base import OAuth2IdentityProvider
-from nexus_auth.providers.google import GoogleOAuth2ProviderBuilder
-from nexus_auth.providers.microsoft import MicrosoftEntraTenantOAuth2ProviderBuilder
+from nexus_auth.settings import nexus_settings
+from django.utils.module_loading import import_string
 
 
 class ObjectFactory:
@@ -26,8 +26,9 @@ class IdentityProviderFactory(ObjectFactory):
         return self.create(provider_type, **kwargs)
 
 
+# Load the provider builders specified in the PROVIDER_BUILDERS setting
 providers = IdentityProviderFactory()
-providers.register_builder("google", GoogleOAuth2ProviderBuilder())
-providers.register_builder(
-    "microsoft_tenant", MicrosoftEntraTenantOAuth2ProviderBuilder()
-)
+builder_config = nexus_settings.get_provider_builders()
+for provider_type, builder_path in builder_config.items():
+    builder = import_string(builder_path)
+    providers.register_builder(provider_type, builder())

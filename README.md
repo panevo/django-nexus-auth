@@ -21,7 +21,7 @@ Define the configuration in your `settings.py` file:
 
 ```python
 NEXUS_AUTH = {
-    "PROVIDERS": {
+    "PROVIDERS_CONFIG": {
         "microsoft_tenant": {
             "client_id": "your-client-id",
             "client_secret": "your-client-secret",
@@ -31,6 +31,11 @@ NEXUS_AUTH = {
             "client_id": "your-client-id",
             "client_secret": "your-client-secret",
         },
+    },
+    # Register the providers
+    "PROVIDER_BUILDERS": {
+        "google": "nexus_auth.providers.google.GoogleOAuth2ProviderBuilder",
+        "microsoft_tenant": "nexus_auth.providers.microsoft.MicrosoftEntraTenantOAuth2ProviderBuilder",
     },
     "PROVIDERS_HANDLER": "nexus_auth.utils.get_provider_types",
 }
@@ -59,15 +64,15 @@ urlpatterns = [
 ## API Endpoints
 
 - `GET /oauth/providers`: Get the active provider types and the corresponding authorization URLs.
-- `POST /oauth/exchange`: Exchange the authorization code retrieved from the authorization URL for JWT tokens for your Django application.
+- `POST /oauth/<str:provider_type>/exchange`: Exchange the authorization code retrieved from the authorization URL for JWT tokens for your Django application.
 
 ## Multi-Tenant Support
 
-The package supports multi-tenant providers by modifying the `PROVIDERS` and `PROVIDERS_HANDLER` settings.
+The package supports multi-tenant providers by modifying the `PROVIDERS_CONFIG` and `PROVIDERS_HANDLER` settings.
 
 ```python
 NEXUS_AUTH = {
-    "PROVIDERS": {
+    "PROVIDERS_CONFIG": {
         "tenantA": {
             "microsoft_tenant": {
                     "client_id": "your-client-id",
@@ -114,6 +119,44 @@ Add the handler function to your `settings.py` file:
 
 ```python
 NEXUS_AUTH = {
-    "PROVIDERS_HANDLER": "<your_handler_function>",
+    "PROVIDERS_HANDLER": "path.to.your_handler_function",
+}
+```
+
+## Adding a new provider
+
+Define the provider object and builder class for your new provider.
+
+```python
+from nexus_auth.providers.base import ProviderBuilder, OAuth2IdentityProvider
+
+# Extend OAuth2IdentityProvider class
+class CustomProvider(OAuth2IdentityProvider):
+    def get_authorization_url(self):
+        return "https://your-provider.com/o/oauth2/authorize"
+
+    def get_token_url(self):
+        return "https://your-provider.com/o/oauth2/token"
+
+
+# Define the builder class
+class CustomProviderBuilder(ProviderBuilder):
+    def __init__(self):
+        self._instance = None
+
+    def __call__(self, client_id, client_secret, **_ignored):
+        if self._instance is None:
+            self._instance = CustomProvider(client_id, client_secret)
+        return self._instance
+```
+
+Register the provider in the PROVIDER_BUILDERS setting:
+
+```python
+NEXUS_AUTH = {
+    "PROVIDER_BUILDERS": {
+        # ... other providers
+        "custom_provider_key": "path.to.CustomProviderBuilder",
+    },
 }
 ```
