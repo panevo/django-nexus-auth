@@ -27,7 +27,7 @@ def active_user(db):
 def mock_fetch_id_token():
     with patch("nexus_auth.utils.get_oauth_provider") as mock_provider, \
          patch("jwt.decode", return_value={"email": "active@example.com"}) as mock_jwt_decode:
-        provider = get_oauth_provider("google")
+        provider = get_oauth_provider(request=None, provider_type="google")
         provider.fetch_id_token = MagicMock(return_value="fake_id_token")
         mock_provider.return_value = provider
         yield mock_provider, mock_jwt_decode
@@ -36,9 +36,12 @@ def test_oauth_providers_success(api_client):
     response = api_client.get(reverse("oauth-provider"))
     assert response.status_code == status.HTTP_200_OK
     assert "providers" in response.data
+    assert len(response.data["providers"]) == 2
+    assert response.data["providers"][0]["type"] == "microsoft_tenant"
+    assert response.data["providers"][1]["type"] == "google"
 
 def test_oauth_providers_no_active_provider(api_client):
-    with patch("nexus_auth.settings.nexus_settings.provider_types_handler", side_effect=NoActiveProviderError):
+    with patch("nexus_auth.settings.nexus_settings.get_provider_config_handler", side_effect=NoActiveProviderError):
         response = api_client.get(reverse("oauth-provider"))
     assert response.status_code == NoActiveProviderError.status_code
     assert response.data["detail"] == NoActiveProviderError.default_detail

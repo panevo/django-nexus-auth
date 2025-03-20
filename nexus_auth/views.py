@@ -36,14 +36,16 @@ class OAuthProvidersView(APIView):
         Raises:
             NoActiveProviderError: If no active provider is found
         """
-        provider_types = nexus_settings.provider_types_handler(request=request)
-
+        providers_config = nexus_settings.get_provider_config_handler(request=request)
+        provider_types = list(providers_config.keys())
         if not provider_types:
             raise NoActiveProviderError()
 
         providers = []
         for provider_type in provider_types:
-            provider = get_oauth_provider(provider_type)
+            provider = get_oauth_provider(request, provider_type)
+            if not provider:
+                continue
             auth_url = provider.build_auth_url()
             providers.append({"type": provider_type, "auth_url": auth_url})
 
@@ -60,6 +62,7 @@ class OAuthExchangeView(APIView):
 
         Args:
             request: HTTP request containing the authorization code
+            provider_type: Type of provider to use
 
         Returns:
             Response: JWT tokens (refresh and access)
@@ -70,7 +73,9 @@ class OAuthExchangeView(APIView):
         serializer = OAuth2ExchangeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        provider = get_oauth_provider(provider_type)
+        provider = get_oauth_provider(request, provider_type)
+        if not provider:
+            raise NoActiveProviderError()
 
         id_token = provider.fetch_id_token(
             authorization_code=serializer.validated_data["code"],

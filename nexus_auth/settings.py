@@ -1,7 +1,8 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from django.conf import settings
 from django.utils.module_loading import import_string
+from nexus_auth.exceptions import NoActiveProviderError
 
 
 class NexusAuthSettings:
@@ -23,23 +24,31 @@ class NexusAuthSettings:
             f"'{self.__class__.__name__}' object has no attribute '{attr}'"
         )
 
-    def get_provider_config(self, provider_type: str) -> Optional[Dict[str, str]]:
-        provider_settings = self._user_settings.get(self._FIELD_PROVIDERS, {}).get(
-            provider_type
-        )
-        if not provider_settings:
-            return None
-        return {k.lower(): v for k, v in provider_settings.items()}
+    def get_provider_config(self) -> Dict[str, Dict[str, str]]:
+        """Get the provider configuration.
 
-    def get_provider_settings(self) -> Dict[str, Dict[str, str]]:
-        return self._user_settings.get(self._FIELD_PROVIDERS, {})
+        Returns:
+            Dict[str, Dict[str, str]]: Provider configuration
+        """
+        provider_config = self._user_settings.get(self._FIELD_PROVIDERS)
+        if not provider_config:
+            raise NoActiveProviderError()
+        return provider_config
 
-    def provider_types_handler(self, **kwargs) -> List[str]:
+    def get_provider_config_handler(self, **kwargs) -> List[str]:
+        """Call the provider configuration handler.
+
+        Args:
+            **kwargs: Additional keyword arguments to pass to the handler
+
+        Returns:
+            List[str]: List of provider types
+        """
         handler_path = self._user_settings.get(self._FIELD_HANDLER)
         if handler_path:
             handler = import_string(handler_path)  # Dynamically import function
             return handler(**kwargs)  # Call the function
-        return []
+        return None
 
 
 DEFAULTS = {

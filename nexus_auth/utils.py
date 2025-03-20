@@ -8,7 +8,9 @@ from nexus_auth.providers.factory import providers
 from nexus_auth.settings import nexus_settings
 
 
-def get_oauth_provider(provider_type: str) -> Optional[OAuth2IdentityProvider]:
+def get_oauth_provider(
+    request: Request, provider_type: str
+) -> Optional[OAuth2IdentityProvider]:
     """Get the OAuth provider object by provider type.
 
     Args:
@@ -20,20 +22,26 @@ def get_oauth_provider(provider_type: str) -> Optional[OAuth2IdentityProvider]:
     Raises:
         NoActiveProviderError: If no active provider is found.
     """
-    provider_config = nexus_settings.get_provider_config(provider_type)
-    if not provider_config:
+    config = nexus_settings.get_provider_config_handler(request=request)
+    provider = config.get(provider_type)
+    if not provider:
         raise NoActiveProviderError()
+
+    config_kwargs = {k.lower(): v for k, v in provider.items()}
 
     return providers.get(
         provider_type,
-        **provider_config,
+        **config_kwargs,
     )
 
 
-def get_provider_types(request: Request) -> List[str]:
+def provider_config_handler(request: Request) -> List[str]:
     """Get the list of provider types.
+
+    Args:
+        request: HTTP request
 
     Returns:
         List[str]: List of provider types
     """
-    return list(nexus_settings.get_provider_settings().keys())
+    return nexus_settings.get_provider_config()
