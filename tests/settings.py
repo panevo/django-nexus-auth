@@ -32,7 +32,7 @@ REST_FRAMEWORK = {
 }
 
 NEXUS_AUTH = {
-    "PROVIDERS_CONFIG": {
+    "CONFIG": {
         "microsoft_tenant": {
             "client_id": "test_client_id",
             "client_secret": "test_client_secret",

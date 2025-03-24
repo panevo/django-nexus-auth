@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 @pytest.fixture
 def default_settings():
     return {
-        "PROVIDERS_CONFIG": {
+        "CONFIG": {
             "microsoft_tenant": {
                     "client_id": "test_client_id",
                     "client_secret": "test_client_secret",

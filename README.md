@@ -21,7 +21,7 @@ Define the configuration in your `settings.py` file:
 
 ```python
 NEXUS_AUTH = {
-    "PROVIDERS_CONFIG": {
+    "CONFIG": {
         "microsoft_tenant": {
             "client_id": "your-client-id",
             "client_secret": "your-client-secret",
@@ -68,11 +68,11 @@ urlpatterns = [
 
 ## Multi-Tenant Support
 
-The package supports multi-tenant providers by modifying the `PROVIDERS_CONFIG` and `PROVIDERS_HANDLER` settings.
+The package supports multi-tenant providers by modifying the `CONFIG` and `PROVIDERS_HANDLER` settings.
 
 ```python
 NEXUS_AUTH = {
-    "PROVIDERS_CONFIG": {
+    "CONFIG": {
         "tenantA": {
             "microsoft_tenant": {
                     "client_id": "your-client-id",
