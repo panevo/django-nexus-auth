@@ -8,7 +8,7 @@ from nexus_auth.exceptions import NoActiveProviderError, NoRegisteredBuilderErro
 class NexusAuthSettings:
     _FIELD_USER_SETTINGS = "_user_settings"
     _FIELD_NEXUS_AUTH = "NEXUS_AUTH"
-    _FIELD_PROVIDERS = "PROVIDERS_CONFIG"
+    _FIELD_PROVIDERS = "CONFIG"
     _FIELD_HANDLER = "PROVIDERS_HANDLER"
     _FIELD_BUILDERS = "PROVIDER_BUILDERS"
 
@@ -26,7 +26,7 @@ class NexusAuthSettings:
         )
 
     def providers_config(self) -> Dict[str, Dict[str, str]]:
-        """Get the PROVIDERS_CONFIG setting.
+        """Get the CONFIG setting.
 
         Returns:
             Dict[str, Dict[str, str]]: Provider configuration
@@ -64,7 +64,7 @@ class NexusAuthSettings:
 
 
 DEFAULTS = {
-    "PROVIDERS_CONFIG": {},
+    "CONFIG": {},
     "PROVIDER_BUILDERS": {},
 }
 
