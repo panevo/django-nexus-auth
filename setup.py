@@ -9,10 +9,10 @@ setup(
         "djangorestframework>=3.14.0",
         "djangorestframework-simplejwt>=5.4.0",
     ],
-    author="Panevo Services Ltd.",
-    author_email="dev@iotorq-lean.com",
+    author="Gabriel Tan",
+    author_email="gabriel.tan@panevo.com",
     description="OIDC Authentication for Django REST Framework with JWT support",
-    long_description="",
+    long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     url="https://github.com/panevo/django-nexus-auth",
     classifiers=[

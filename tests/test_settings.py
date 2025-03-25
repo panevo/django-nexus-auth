@@ -1,6 +1,5 @@
 import pytest
-from nexus_auth.settings import NexusAuthSettings, NoActiveProviderError
-from unittest.mock import MagicMock
+from nexus_auth.settings import NexusAuthSettings
 
 
 @pytest.fixture
