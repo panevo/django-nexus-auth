@@ -52,3 +52,14 @@ def test_getattr_defaults():
     assert settings.SOME_SETTING == "default_value"
     with pytest.raises(AttributeError):
         settings.NON_EXISTENT_SETTING
+
+def test_default_providers_handler():
+    # Simulate settings with CONFIG set but without PROVIDERS_HANDLER
+    user_settings = {
+        'CONFIG': {'provider1': {'client_id': 'id1', 'client_secret': 'secret1'}}
+    }
+
+    nexus_settings = NexusAuthSettings(user_settings=user_settings)
+    # Assert that the default handler is used
+    assert nexus_settings._user_settings['PROVIDERS_HANDLER'] == 'nexus_auth.utils.load_providers_config'
+
