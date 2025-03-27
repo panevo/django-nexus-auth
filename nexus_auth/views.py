@@ -12,12 +12,16 @@ from nexus_auth.exceptions import (
     NoActiveProviderError,
     NoAssociatedUserError,
     UserNotActiveError,
+    IDTokenExchangeError,
+    MissingIDTokenError,
+    InvalidTokenError,
 )
 from nexus_auth.serializers import (
     OAuth2ExchangeSerializer,
 )
 from nexus_auth.settings import nexus_settings
 from nexus_auth.utils import get_oauth_provider
+
 
 User = get_user_model()
 
@@ -75,19 +79,24 @@ class OAuthExchangeView(APIView):
         if not provider:
             raise NoActiveProviderError()
 
-        id_token = provider.fetch_id_token(
-            authorization_code=serializer.validated_data["code"],
-            code_verifier=serializer.validated_data["code_verifier"],
-            redirect_uri=serializer.validated_data["redirect_uri"],
-        )
+        try:
+            id_token = provider.fetch_id_token(
+                authorization_code=serializer.validated_data["code"],
+                code_verifier=serializer.validated_data["code_verifier"],
+                redirect_uri=serializer.validated_data["redirect_uri"],
+            )
+        except (IDTokenExchangeError, MissingIDTokenError, InvalidTokenError) as e:
+            return Response(
+                {"error": str(e), "code": e.default_code}, status=e.status_code
+            )
 
         decoded_id_token = jwt.decode(id_token, options={"verify_signature": False})
         email = decoded_id_token.get("email")
 
         try:
             user = User.objects.get(email=email)
-        except User.DoesNotExist:
-            raise NoAssociatedUserError()
+        except User.DoesNotExist as e:
+            raise NoAssociatedUserError() from e
 
         if not user.is_active:
             raise UserNotActiveError()
