@@ -37,7 +37,6 @@ NEXUS_AUTH = {
         "google": "nexus_auth.providers.google.GoogleOAuth2ProviderBuilder",
         "microsoft_tenant": "nexus_auth.providers.microsoft.MicrosoftEntraTenantOAuth2ProviderBuilder",
     },
-    "PROVIDERS_HANDLER": "nexus_auth.utils.get_provider_types",
 }
 ```
 
@@ -68,11 +67,12 @@ urlpatterns = [
 
 ## Multi-Tenant Support
 
-The package supports multi-tenant providers by modifying the `CONFIG` and `PROVIDERS_HANDLER` settings.
+The package supports multi-tenant providers by modifying the `CONFIG` and providing a custom `PROVIDERS_HANDLER` value in the settings.
 
 ```python
 NEXUS_AUTH = {
     "CONFIG": {
+        # Tenant A configuration
         "tenantA": {
             "microsoft_tenant": {
                     "client_id": "your-client-id",
@@ -84,6 +84,7 @@ NEXUS_AUTH = {
                 "client_secret": "your-client-secret",
             },
         },
+        # Tenant B configuration
         "tenantB": {
             "microsoft_tenant": {
                 "client_id": "your-client-id",
@@ -96,6 +97,7 @@ NEXUS_AUTH = {
             },
         },
     },
+    "PROVIDERS_HANDLER": "path.to.your_handler_function",
 }
 ```
 
@@ -105,22 +107,16 @@ Define your own handler function for getting the provider types.
 from nexus_auth.settings import nexus_settings
 
 def your_handler_function(request):
+    # Get the tenant from the request headers
     tenant = request.headers.get("X-Tenant")
 
     if tenant:
+        # Get the provider settings for the tenant
         provider_settings = nexus_settings.get_provider_settings().get(tenant)
         if provider_settings:
-            return list(provider_settings.keys())
+            return provider_settings
 
-    return []
-```
-
-Add the handler function to your `settings.py` file:
-
-```python
-NEXUS_AUTH = {
-    "PROVIDERS_HANDLER": "path.to.your_handler_function",
-}
+    return None
 ```
 
 ## Adding a new provider

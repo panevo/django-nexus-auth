@@ -11,12 +11,20 @@ class NexusAuthSettings:
     _FIELD_PROVIDERS = "CONFIG"
     _FIELD_HANDLER = "PROVIDERS_HANDLER"
     _FIELD_BUILDERS = "PROVIDER_BUILDERS"
+    _DEFAULT_HANDLER = "nexus_auth.utils.load_providers_config"
 
     def __init__(self, user_settings=None, defaults=None):
         self.defaults = defaults or {}
         self._user_settings = user_settings or getattr(
             settings, self._FIELD_NEXUS_AUTH, {}
         )
+
+        # If CONFIG is provided and PROVIDERS_HANDLER is not set, set it to the default handler
+        if (
+            self._FIELD_PROVIDERS in self._user_settings
+            and self._FIELD_HANDLER not in self._user_settings
+        ):
+            self._user_settings[self._FIELD_HANDLER] = self._DEFAULT_HANDLER
 
     def __getattr__(self, attr: str) -> Any:
         if attr in self.defaults:
