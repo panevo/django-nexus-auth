@@ -32,24 +32,21 @@ class OAuthProvidersView(APIView):
     permission_classes = (AllowAny,)
 
     def get(self, request: Request) -> Response:
-        """Get the active provider type.
-
-        Returns:
-            Response: List of providers with authorization URL
-
-        Raises:
-            NoActiveProviderError: If no active provider is found
         """
-        providers_config = nexus_settings.get_providers_config(request=request)
-        provider_types = list(providers_config.keys()) if providers_config else []
-
+        Retrieve active providers with authorization URLs.
+        """
+        providers_config = nexus_settings.get_providers_config(request=request) or {}
         providers = []
-        for provider_type in provider_types:
+
+        for provider_type, _ in providers_config.items():
             provider = build_oauth_provider(provider_type, providers_config)
-            if not provider:
-                continue
-            auth_url = provider.build_auth_url()
-            providers.append({"type": provider_type, "auth_url": auth_url})
+            if provider:
+                providers.append(
+                    {
+                        "type": provider_type,
+                        "auth_url": provider.build_auth_url(),
+                    }
+                )
 
         return Response({"providers": providers}, status=200)
 
