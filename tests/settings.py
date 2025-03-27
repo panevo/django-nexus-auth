@@ -47,5 +47,5 @@ NEXUS_AUTH = {
         "google": "nexus_auth.providers.google.GoogleOAuth2ProviderBuilder",
         "microsoft_tenant": "nexus_auth.providers.microsoft.MicrosoftEntraTenantOAuth2ProviderBuilder",
     },
-    "PROVIDERS_HANDLER": "nexus_auth.utils.load_provider_config",
+    "PROVIDERS_HANDLER": "nexus_auth.utils.load_providers_config",
 }

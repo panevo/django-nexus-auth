@@ -36,8 +36,8 @@ class NexusAuthSettings:
             raise NoActiveProviderError()
         return provider_config
 
-    def get_provider_config(self, **kwargs) -> Dict[str, Dict[str, str]]:
-        """Call the provider configuration handler.
+    def get_providers_config(self, **kwargs) -> Dict[str, Dict[str, str]]:
+        """Call the providers configuration handler.
 
         Args:
             **kwargs: Additional keyword arguments to pass to the handler

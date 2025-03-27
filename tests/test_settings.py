@@ -20,14 +20,14 @@ def default_settings():
             "google": "nexus_auth.providers.google.GoogleOAuth2ProviderBuilder",
             "microsoft_tenant": "nexus_auth.providers.microsoft.MicrosoftEntraTenantOAuth2ProviderBuilder",
         },
-        "PROVIDERS_HANDLER": "nexus_auth.utils.load_provider_config",
+        "PROVIDERS_HANDLER": "nexus_auth.utils.load_providers_config",
     }
 
 @pytest.fixture
 def nexus_auth_settings(default_settings):
     return NexusAuthSettings(user_settings=default_settings)
 
-def test_default_get_provider_config(nexus_auth_settings):
+def test_default_get_providers_config(nexus_auth_settings):
     config = nexus_auth_settings.providers_config()
     assert config == {
         "microsoft_tenant": {

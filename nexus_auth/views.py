@@ -20,7 +20,7 @@ from nexus_auth.serializers import (
     OAuth2ExchangeSerializer,
 )
 from nexus_auth.settings import nexus_settings
-from nexus_auth.utils import get_oauth_provider
+from nexus_auth.utils import build_oauth_provider
 
 
 User = get_user_model()
@@ -40,12 +40,12 @@ class OAuthProvidersView(APIView):
         Raises:
             NoActiveProviderError: If no active provider is found
         """
-        providers_config = nexus_settings.get_provider_config(request=request)
+        providers_config = nexus_settings.get_providers_config(request=request)
         provider_types = list(providers_config.keys()) if providers_config else []
 
         providers = []
         for provider_type in provider_types:
-            provider = get_oauth_provider(request, provider_type)
+            provider = build_oauth_provider(provider_type, providers_config)
             if not provider:
                 continue
             auth_url = provider.build_auth_url()
@@ -75,7 +75,8 @@ class OAuthExchangeView(APIView):
         serializer = OAuth2ExchangeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        provider = get_oauth_provider(request, provider_type)
+        providers_config = nexus_settings.get_providers_config(request=request)
+        provider = build_oauth_provider(provider_type, providers_config)
         if not provider:
             raise NoActiveProviderError()
 
