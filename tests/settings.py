@@ -43,8 +43,4 @@ NEXUS_AUTH = {
             "client_secret": "test_client_secret",
         },
     },
-    "PROVIDER_BUILDERS": {
-        "google": "nexus_auth.providers.google.GoogleOAuth2ProviderBuilder",
-        "microsoft_tenant": "nexus_auth.providers.microsoft.MicrosoftEntraTenantOAuth2ProviderBuilder",
-    },
 }
