@@ -62,58 +62,39 @@ urlpatterns = [
 
 ## Multi-Tenant Example
 
-By providing a custom `PROVIDERS_HANDLER` value in the settings, you can implement multi-tenant support.
+In a multi-tenant configuration, you may need to define different provider configurations for each tenant. In that case, you can use the `PROVIDERS_HANDLER` to dynamically define the provider configs from a request object, such as:
 
 ```python
-NEXUS_AUTH = {
-    "CONFIG": {
-        # Tenant A configuration
-        "tenantA": {
-            "microsoft_tenant": {
-                    "client_id": "your-client-id",
-                    "client_secret": "your-client-secret",
-                "tenant_id": "your-tenant-id",
-            },
-            "google": {
-                "client_id": "your-client-id",
-                "client_secret": "your-client-secret",
-            },
-        },
-        # Tenant B configuration
-        "tenantB": {
-            "microsoft_tenant": {
-                "client_id": "your-client-id",
-                "client_secret": "your-client-secret",
-                "tenant_id": "your-tenant-id",
-            },
-            "google": {
-                "client_id": "your-client-id",
-                "client_secret": "your-client-secret",
-            },
-        },
-    },
-    "PROVIDERS_HANDLER": "path.to.your_handler_function",
-}
-```
-
-- Note: It is not mandatory to set the `CONFIG` value if you don't plan to use it. You may modify the handler function to retrieve the provider settings from your own source.
-
-Define your own handler function for getting the provider types.
-
-```python
-from nexus_auth.settings import nexus_settings
-
 def your_handler_function(request):
     # Get the tenant from the request headers
     tenant = request.headers.get("X-Tenant")
 
-    if tenant:
-        # Get the provider settings for the tenant
-        provider_settings = nexus_settings.get_provider_settings().get(tenant)
-        if provider_settings:
-            return provider_settings
+    if tenant == "companyA":
+        return { "microsoft_tenant": {
+            "client_id": "... ",
+            "client_secret": "... ",
+            "tenant_id": " ... ",
+        },
+        "google": {
+            "client_id": "...",
+            "client_secret": "...",
+        }}
+    elif tenant == "companyB":
+        return { "microsoft_tenant": {
+            "client_id": "... ",
+            "client_secret": "... ",
+            "tenant_id": " ... ",
+        }}
 
     return None
+```
+
+In this case, you would set the `PROVIDERS_HANDLER` to the path of your handler function:
+
+```python
+NEXUS_AUTH = {
+    "PROVIDERS_HANDLER": "path.to.your_handler_function",
+}
 ```
 
 ## Adding a new provider
