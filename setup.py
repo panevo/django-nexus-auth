@@ -1,21 +1,18 @@
-from setuptools import setup, find_packages
-import os
-
+from setuptools import find_packages, setup
 
 setup(
     name="django-nexus-auth",
-    version="0.1.0",
+    version="0.1.2",
     packages=find_packages(),
     install_requires=[
-        "Django>=3.2",
-        "djangorestframework>=3.12.0",
-        "django-tenants>=3.4.0",
-        "djangorestframework-simplejwt>=3.1.1"
+        "Django>=4.2.19",
+        "djangorestframework>=3.14.0",
+        "djangorestframework-simplejwt>=5.4.0",
     ],
-    author="Panevo Services Ltd.",
-    author_email="dev@iotorq-lean.com",
+    author="Gabriel Tan",
+    author_email="gabriel.tan@panevo.com",
     description="OIDC Authentication for Django REST Framework with JWT support",
-    long_description="",
+    long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     url="https://github.com/panevo/django-nexus-auth",
     classifiers=[
