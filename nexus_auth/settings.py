@@ -2,7 +2,7 @@ from typing import Any, Dict
 
 from django.conf import settings
 from django.utils.module_loading import import_string
-from nexus_auth.exceptions import NoActiveProviderError, NoRegisteredBuilderError
+from nexus_auth.exceptions import NoActiveProviderError
 
 
 class NexusAuthSettings:
