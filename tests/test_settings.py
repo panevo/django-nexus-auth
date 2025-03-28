@@ -1,5 +1,5 @@
 import pytest
-from nexus_auth.settings import NexusAuthSettings
+from nexus_auth.settings import NexusAuthSettings, DEFAULTS
 
 
 @pytest.fixture
@@ -17,14 +17,14 @@ def default_settings():
             },
         },
         "PROVIDER_BUILDERS": {
-            "google": "nexus_auth.providers.google.GoogleOAuth2ProviderBuilder",
-            "microsoft_tenant": "nexus_auth.providers.microsoft.MicrosoftEntraTenantOAuth2ProviderBuilder",
+            "custom": "path.to.CustomProviderBuilder",
         },
     }
 
 @pytest.fixture
 def nexus_auth_settings(default_settings):
-    return NexusAuthSettings(user_settings=default_settings)
+    """Create a NexusAuthSettings instance with default settings."""
+    return NexusAuthSettings(user_settings=default_settings, defaults=DEFAULTS)
 
 def test_default_get_providers_config(nexus_auth_settings):
     config = nexus_auth_settings.providers_config()
@@ -41,19 +41,24 @@ def test_default_get_providers_config(nexus_auth_settings):
     }
 
 def test_get_providers(nexus_auth_settings):
+    """Test that get_provider_builders returns the correct providers."""
     providers = nexus_auth_settings.get_provider_builders()
+    # Check that default providers are merged with the additional providers
     assert providers == {
         "google": "nexus_auth.providers.google.GoogleOAuth2ProviderBuilder",
         "microsoft_tenant": "nexus_auth.providers.microsoft.MicrosoftEntraTenantOAuth2ProviderBuilder",
+        "custom": "path.to.CustomProviderBuilder",
     }
 
 def test_getattr_defaults():
+    """Test that getattr returns default values."""
     settings = NexusAuthSettings(defaults={"SOME_SETTING": "default_value"})
     assert settings.SOME_SETTING == "default_value"
     with pytest.raises(AttributeError):
         settings.NON_EXISTENT_SETTING
 
 def test_default_providers_handler():
+    """Test that the default handler is used when PROVIDERS_HANDLER is not set."""
     # Simulate settings with CONFIG set but without PROVIDERS_HANDLER
     user_settings = {
         'CONFIG': {'provider1': {'client_id': 'id1', 'client_secret': 'secret1'}}
@@ -62,4 +67,3 @@ def test_default_providers_handler():
     nexus_settings = NexusAuthSettings(user_settings=user_settings)
     # Assert that the default handler is used
     assert nexus_settings._user_settings['PROVIDERS_HANDLER'] == 'nexus_auth.utils.load_providers_config'
-

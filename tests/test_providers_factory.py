@@ -10,6 +10,7 @@ class MockBuilder:
         return kwargs
 
 def test_object_factory():
+    """Test that the ObjectFactory creates objects using registered builders."""
     factory = ObjectFactory()
     mock_builder = MockBuilder()
     
@@ -22,6 +23,7 @@ def test_object_factory():
         factory.create("unknown_key")
 
 def test_identity_provider_factory():
+    """Test that the IdentityProviderFactory creates identity providers using registered builders."""
     factory = IdentityProviderFactory()
     
     google_provider_builder = GoogleOAuth2ProviderBuilder()
