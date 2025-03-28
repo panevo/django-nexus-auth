@@ -50,6 +50,20 @@ def test_get_providers(nexus_auth_settings):
         "custom": "path.to.CustomProviderBuilder",
     }
 
+def test_get_providers_overwrite_defaults():
+    """Test additional providers overwrite default providers."""
+    settings = NexusAuthSettings(user_settings={
+        "PROVIDER_BUILDERS": {
+            "google": "my.custom.GoogleProviderBuilder",
+        },
+    }, defaults=DEFAULTS)
+
+    providers = settings.get_provider_builders()
+    assert providers == {
+        "google": "my.custom.GoogleProviderBuilder",
+        "microsoft_tenant": "nexus_auth.providers.microsoft.MicrosoftEntraTenantOAuth2ProviderBuilder",
+    }
+
 def test_getattr_defaults():
     """Test that getattr returns default values."""
     settings = NexusAuthSettings(defaults={"SOME_SETTING": "default_value"})
