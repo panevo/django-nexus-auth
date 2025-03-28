@@ -65,9 +65,9 @@ urlpatterns = [
 - `GET /oauth/providers`: Get the active provider types and the corresponding authorization URLs.
 - `POST /oauth/<str:provider_type>/exchange`: Exchange the authorization code retrieved from the authorization URL for JWT tokens for your Django application.
 
-## Multi-Tenant Support
+## Multi-Tenant Example
 
-The package supports multi-tenant providers by modifying the `CONFIG` and providing a custom `PROVIDERS_HANDLER` value in the settings.
+By providing a custom `PROVIDERS_HANDLER` value in the settings, you can implement multi-tenant support.
 
 ```python
 NEXUS_AUTH = {
@@ -100,6 +100,8 @@ NEXUS_AUTH = {
     "PROVIDERS_HANDLER": "path.to.your_handler_function",
 }
 ```
+
+- Note: It is not mandatory to set the `CONFIG` value if you don't plan to use it. You may modify the handler function to retrieve the provider settings from your own source.
 
 Define your own handler function for getting the provider types.
 
