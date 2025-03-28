@@ -3,7 +3,11 @@ from typing import Dict, Optional
 from urllib.parse import urlencode
 
 import requests
-from nexus_auth.exceptions import MissingIDTokenError
+from nexus_auth.exceptions import (
+    MissingIDTokenError,
+    IDTokenExchangeError,
+    InvalidTokenError,
+)
 
 
 class OAuth2IdentityProvider(ABC):
@@ -78,7 +82,9 @@ class OAuth2IdentityProvider(ABC):
             Dict containing ID token and other token response data
 
         Raises:
-            MissingIDTokenError: If the response does not contain an ID token
+            IDTokenExchangeError: If the token exchange requests fails
+            MissingIDTokenError: If the token response is missing the ID token
+            InvalidTokenError: If the token response from the IdP is invalid
         """
         token_url = self.get_token_url()
         data = {
@@ -90,16 +96,34 @@ class OAuth2IdentityProvider(ABC):
             "client_secret": self.client_secret,
         }
 
-        response = requests.post(
-            token_url,
-            data=data,
-            timeout=10,
-            headers={"Content-Type": "application/x-www-form-urlencoded"},
-        )
-        response.raise_for_status()
+        try:
+            response = requests.post(
+                token_url,
+                data=data,
+                timeout=10,
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+            )
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            raise IDTokenExchangeError() from e
 
-        token_data = response.json()
+        try:
+            token_data = response.json()
+        except ValueError as e:
+            raise InvalidTokenError() from e
+
         if "id_token" not in token_data:
             raise MissingIDTokenError()
 
         return token_data["id_token"]
+
+
+class ProviderBuilder(ABC):
+    """Base class for provider builders."""
+
+    def __init__(self, **kwargs):
+        self._instance = None
+
+    @abstractmethod
+    def __call__(self, **kwargs):
+        pass

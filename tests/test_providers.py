@@ -1,7 +1,8 @@
 from unittest.mock import patch
 
 import pytest
-from nexus_auth.exceptions import MissingIDTokenError
+from requests import RequestException
+from nexus_auth.exceptions import MissingIDTokenError, IDTokenExchangeError, InvalidTokenError
 from nexus_auth.providers.base import OAuth2IdentityProvider
 
 
@@ -44,4 +45,19 @@ class TestMockOAuth2Provider:
         mock_post.return_value.json.return_value = {}
 
         with pytest.raises(MissingIDTokenError):
+            provider.fetch_id_token("auth_code", "verifier", "https://redirect.url")
+
+    @patch("requests.post")
+    def test_fetch_id_token_exchange_error(self, mock_post, provider):
+        mock_post.side_effect = RequestException
+
+        with pytest.raises(IDTokenExchangeError):
+            provider.fetch_id_token("auth_code", "verifier", "https://redirect.url")
+
+    @patch("requests.post")
+    def test_fetch_id_token_invalid_json(self, mock_post, provider):
+        mock_post.return_value.status_code = 200
+        mock_post.return_value.json.side_effect = ValueError
+
+        with pytest.raises(InvalidTokenError):
             provider.fetch_id_token("auth_code", "verifier", "https://redirect.url")

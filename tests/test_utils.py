@@ -1,18 +1,46 @@
 from nexus_auth.providers.google import GoogleOAuth2Provider
 from nexus_auth.providers.microsoft import MicrosoftEntraTenantOAuth2Provider
-from nexus_auth.utils import get_oauth_provider, get_provider_types
+from nexus_auth.utils import build_oauth_provider, load_providers_config
+from nexus_auth.settings import nexus_settings
 
-
-def test_get_provider_types():
-   
-    provider_types = get_provider_types(None) 
-    assert provider_types == ['microsoft_tenant', 'google']
-
-def test_get_oauth_provider():
-    provider = get_oauth_provider('microsoft_tenant')
+def test_build_oauth_provider():
+    """
+    Test build oauth provider function
+    """
+    providers_config = {
+        "microsoft_tenant": {
+            "client_id": "test_client_id",
+            "client_secret": "test_client_secret",
+            "tenant_id": "test_tenant_id",
+        },
+        "google": {
+            "client_id": "test_client_id",
+            "client_secret": "test_client_secret",
+        },
+    }
+    provider = build_oauth_provider(provider_type='microsoft_tenant', providers_config=providers_config)
     assert provider is not None
     assert isinstance(provider, MicrosoftEntraTenantOAuth2Provider)
 
-    provider = get_oauth_provider('google')
+    provider = build_oauth_provider(provider_type='google', providers_config=providers_config)
     assert provider is not None
     assert isinstance(provider, GoogleOAuth2Provider)
+
+
+def test_default_load_providers_config():
+    """
+    Test default load providers config function
+    """
+    config = load_providers_config()
+    assert config == {
+        "microsoft_tenant": {
+            "client_id": "test_client_id",
+            "client_secret": "test_client_secret",
+            "tenant_id": "test_tenant_id",
+        },
+        "google": {
+            "client_id": "test_client_id",
+            "client_secret": "test_client_secret",
+        },
+    }
+

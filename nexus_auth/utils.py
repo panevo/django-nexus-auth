@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Dict, Optional
 
 from rest_framework.request import Request
 
@@ -8,11 +8,14 @@ from nexus_auth.providers.factory import providers
 from nexus_auth.settings import nexus_settings
 
 
-def get_oauth_provider(provider_type: str) -> Optional[OAuth2IdentityProvider]:
-    """Get the OAuth provider object by provider type.
+def build_oauth_provider(
+    provider_type: str, providers_config: Dict[str, Dict[str, str]]
+) -> Optional[OAuth2IdentityProvider]:
+    """Build an OAuth provider object by provider type.
 
     Args:
         provider_type: Type of provider to get
+        providers_config: Providers configuration
 
     Returns:
         Optional[OAuth2IdentityProvider]: The active provider if found, None if no provider exists.
@@ -20,20 +23,27 @@ def get_oauth_provider(provider_type: str) -> Optional[OAuth2IdentityProvider]:
     Raises:
         NoActiveProviderError: If no active provider is found.
     """
-    provider_config = nexus_settings.get_provider_config(provider_type)
+    provider_config = providers_config.get(provider_type)
     if not provider_config:
         raise NoActiveProviderError()
 
+    config_kwargs = {k.lower(): v for k, v in provider_config.items()}
+
     return providers.get(
         provider_type,
-        **provider_config,
+        **config_kwargs,
     )
 
 
-def get_provider_types(request: Request) -> List[str]:
-    """Get the list of provider types.
+def load_providers_config(
+    request: Optional[Request] = None,
+) -> Dict[str, Dict[str, str]]:
+    """Load providers configuration.
+
+    Args:
+        request: HTTP request
 
     Returns:
-        List[str]: List of provider types
+        Dict[str, Dict[str, str]]: Provider configuration
     """
-    return list(nexus_settings.get_provider_settings().keys())
+    return nexus_settings.providers_config()

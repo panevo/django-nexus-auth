@@ -12,12 +12,16 @@ from nexus_auth.exceptions import (
     NoActiveProviderError,
     NoAssociatedUserError,
     UserNotActiveError,
+    IDTokenExchangeError,
+    MissingIDTokenError,
+    InvalidTokenError,
 )
 from nexus_auth.serializers import (
     OAuth2ExchangeSerializer,
 )
 from nexus_auth.settings import nexus_settings
-from nexus_auth.utils import get_oauth_provider
+from nexus_auth.utils import build_oauth_provider
+
 
 User = get_user_model()
 
@@ -28,24 +32,21 @@ class OAuthProvidersView(APIView):
     permission_classes = (AllowAny,)
 
     def get(self, request: Request) -> Response:
-        """Get the active provider type.
-
-        Returns:
-            Response: List of providers with authorization URL
-
-        Raises:
-            NoActiveProviderError: If no active provider is found
         """
-        provider_types = nexus_settings.provider_types_handler(request=request)
-
-        if not provider_types:
-            raise NoActiveProviderError()
-
+        Retrieve active providers with authorization URLs.
+        """
+        providers_config = nexus_settings.get_providers_config(request=request) or {}
         providers = []
-        for provider_type in provider_types:
-            provider = get_oauth_provider(provider_type)
-            auth_url = provider.build_auth_url()
-            providers.append({"type": provider_type, "auth_url": auth_url})
+
+        for provider_type, _ in providers_config.items():
+            provider = build_oauth_provider(provider_type, providers_config)
+            if provider:
+                providers.append(
+                    {
+                        "type": provider_type,
+                        "auth_url": provider.build_auth_url(),
+                    }
+                )
 
         return Response({"providers": providers}, status=200)
 
@@ -60,6 +61,7 @@ class OAuthExchangeView(APIView):
 
         Args:
             request: HTTP request containing the authorization code
+            provider_type: Type of provider to use
 
         Returns:
             Response: JWT tokens (refresh and access)
@@ -70,21 +72,29 @@ class OAuthExchangeView(APIView):
         serializer = OAuth2ExchangeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        provider = get_oauth_provider(provider_type)
+        providers_config = nexus_settings.get_providers_config(request=request)
+        provider = build_oauth_provider(provider_type, providers_config)
+        if not provider:
+            raise NoActiveProviderError()
 
-        id_token = provider.fetch_id_token(
-            authorization_code=serializer.validated_data["code"],
-            code_verifier=serializer.validated_data["code_verifier"],
-            redirect_uri=serializer.validated_data["redirect_uri"],
-        )
+        try:
+            id_token = provider.fetch_id_token(
+                authorization_code=serializer.validated_data["code"],
+                code_verifier=serializer.validated_data["code_verifier"],
+                redirect_uri=serializer.validated_data["redirect_uri"],
+            )
+        except (IDTokenExchangeError, MissingIDTokenError, InvalidTokenError) as e:
+            return Response(
+                {"error": str(e), "code": e.default_code}, status=e.status_code
+            )
 
         decoded_id_token = jwt.decode(id_token, options={"verify_signature": False})
         email = decoded_id_token.get("email")
 
         try:
             user = User.objects.get(email=email)
-        except User.DoesNotExist:
-            raise NoAssociatedUserError()
+        except User.DoesNotExist as e:
+            raise NoAssociatedUserError() from e
 
         if not user.is_active:
             raise UserNotActiveError()
