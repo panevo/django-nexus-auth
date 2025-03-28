@@ -32,11 +32,6 @@ NEXUS_AUTH = {
             "client_secret": "your-client-secret",
         },
     },
-    # Register the providers
-    "PROVIDER_BUILDERS": {
-        "google": "nexus_auth.providers.google.GoogleOAuth2ProviderBuilder",
-        "microsoft_tenant": "nexus_auth.providers.microsoft.MicrosoftEntraTenantOAuth2ProviderBuilder",
-    },
 }
 ```
 
@@ -148,13 +143,14 @@ class CustomProviderBuilder(ProviderBuilder):
         return self._instance
 ```
 
-Register the provider in the PROVIDER_BUILDERS setting:
+Register additional providers in the PROVIDER_BUILDERS setting:
 
 ```python
 NEXUS_AUTH = {
     "PROVIDER_BUILDERS": {
-        # ... other providers
         "custom_provider_key": "path.to.CustomProviderBuilder",
     },
 }
 ```
+
+This will effectively add the new provider on top of the existing default providers.

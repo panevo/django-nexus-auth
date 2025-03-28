@@ -65,15 +65,20 @@ class NexusAuthSettings:
         Returns:
             Dict[str, str]: Builder configuration
         """
-        builder_config = self._user_settings.get(self._FIELD_BUILDERS)
-        if not builder_config:
-            raise NoRegisteredBuilderError()
-        return builder_config
+        user_builders = self._user_settings.get(self._FIELD_BUILDERS, {})
+        merged_builders = {
+            **self.defaults.get(self._FIELD_BUILDERS, {}),
+            **user_builders,
+        }
+        return merged_builders
 
 
 DEFAULTS = {
     "CONFIG": {},
-    "PROVIDER_BUILDERS": {},
+    "PROVIDER_BUILDERS": {
+        "google": "nexus_auth.providers.google.GoogleOAuth2ProviderBuilder",
+        "microsoft_tenant": "nexus_auth.providers.microsoft.MicrosoftEntraTenantOAuth2ProviderBuilder",
+    },
 }
 
 nexus_settings = NexusAuthSettings(user_settings=None, defaults=DEFAULTS)
