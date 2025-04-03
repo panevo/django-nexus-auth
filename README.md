@@ -1,5 +1,7 @@
 # Django Nexus Auth
 
+[![Published on Django Packages](https://img.shields.io/badge/Published%20on-Django%20Packages-0c3c26)](https://djangopackages.org/packages/p/django-nexus-auth/) [![PyPI version](https://img.shields.io/pypi/v/django-nexus-auth.svg)](https://pypi.python.org/pypi/django-nexus-auth)
+
 Django Nexus Auth is a Django package that provides OAuth authentication support following the Authentication Code Grant Flow with PKCE. It is designed to work seamlessly for Single-Page Applications that use [Django REST Framework](https://www.django-rest-framework.org/) and [simplejwt](https://github.com/davesque/django-rest-framework-simplejwt) for authentication.
 
 ## Features
