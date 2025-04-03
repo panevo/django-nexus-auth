@@ -6,7 +6,7 @@
 
 - [#8](https://github.com/panevo/django-nexus-auth/pull/8) Bump django from 4.2.19 to 4.2.20
 
-## 0.1.2 (2025-04-03)
+## 0.1.2 (2025-03-28)
 
 ### Added
 
