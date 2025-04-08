@@ -11,25 +11,43 @@ python -m venv .venv
 source .venv/bin/activate  # On Windows use: .venv\Scripts\activate
 ```
 
-1. Install requirements:
+2. Install requirements:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-1. Run migrations:
+3. Run migrations:
 
 ```bash
 python manage.py migrate
 ```
 
-1. Create a superuser:
+4. Create a superuser:
 
 ```bash
 python manage.py createsuperuser
 ```
 
-1. Run the development server:
+5. Modify the `settings.py` file to include the configuration for the providers:
+
+```python
+NEXUS_AUTH = {
+    "CONFIG": {
+        "microsoft_tenant": {
+            "client_id": "your-client-id",
+            "client_secret": "your-client-secret",
+            "tenant_id": "your-tenant-id",
+        },
+        "google": {
+            "client_id": "your-client-id",
+            "client_secret": "your-client-secret",
+        },
+    },
+}
+```
+
+6. Run the development server:
 
 ```bash
 python manage.py runserver
