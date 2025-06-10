@@ -1,7 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.signals import user_logged_in
 
-import jwt
 from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -14,14 +13,18 @@ from nexus_auth.exceptions import (
     UserNotActiveError,
     IDTokenExchangeError,
     MissingIDTokenError,
-    InvalidTokenError,
+    InvalidTokenResponseError,
+    MicrosoftGraphAPIError,
+    AccessTokenExchangeError,
+    MissingAccessTokenError,
 )
 from nexus_auth.serializers import (
     OAuth2ExchangeSerializer,
 )
 from nexus_auth.settings import nexus_settings
 from nexus_auth.utils import build_oauth_provider
-
+from nexus_auth.providers.base import OAuth2IdentityProvider
+from typing import Optional
 
 User = get_user_model()
 
@@ -73,23 +76,20 @@ class OAuthExchangeView(APIView):
         serializer.is_valid(raise_exception=True)
 
         providers_config = nexus_settings.get_providers_config(request=request)
-        provider = build_oauth_provider(provider_type, providers_config)
+        provider: Optional[OAuth2IdentityProvider] = build_oauth_provider(provider_type, providers_config)
         if not provider:
             raise NoActiveProviderError()
 
         try:
-            id_token = provider.fetch_id_token(
+            email: Optional[str] = provider.exchange_code_for_email(
                 authorization_code=serializer.validated_data["code"],
                 code_verifier=serializer.validated_data["code_verifier"],
                 redirect_uri=serializer.validated_data["redirect_uri"],
             )
-        except (IDTokenExchangeError, MissingIDTokenError, InvalidTokenError) as e:
+        except (IDTokenExchangeError, MissingIDTokenError, InvalidTokenResponseError, MicrosoftGraphAPIError, AccessTokenExchangeError, MissingAccessTokenError) as e:
             return Response(
                 {"error": str(e), "code": e.default_code}, status=e.status_code
             )
-
-        decoded_id_token = jwt.decode(id_token, options={"verify_signature": False})
-        email = decoded_id_token.get("email")
 
         try:
             user = User.objects.get(email=email)
