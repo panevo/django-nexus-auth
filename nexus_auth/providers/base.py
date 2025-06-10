@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Optional
+from typing import Optional
 from urllib.parse import urlencode
 
 import requests

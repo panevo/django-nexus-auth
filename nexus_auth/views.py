@@ -76,7 +76,9 @@ class OAuthExchangeView(APIView):
         serializer.is_valid(raise_exception=True)
 
         providers_config = nexus_settings.get_providers_config(request=request)
-        provider: Optional[OAuth2IdentityProvider] = build_oauth_provider(provider_type, providers_config)
+        provider: Optional[OAuth2IdentityProvider] = build_oauth_provider(
+            provider_type, providers_config
+        )
         if not provider:
             raise NoActiveProviderError()
 
@@ -86,7 +88,14 @@ class OAuthExchangeView(APIView):
                 code_verifier=serializer.validated_data["code_verifier"],
                 redirect_uri=serializer.validated_data["redirect_uri"],
             )
-        except (IDTokenExchangeError, MissingIDTokenError, InvalidTokenResponseError, MicrosoftGraphAPIError, AccessTokenExchangeError, MissingAccessTokenError) as e:
+        except (
+            IDTokenExchangeError,
+            MissingIDTokenError,
+            InvalidTokenResponseError,
+            MicrosoftGraphAPIError,
+            AccessTokenExchangeError,
+            MissingAccessTokenError,
+        ) as e:
             return Response(
                 {"error": str(e), "code": e.default_code}, status=e.status_code
             )

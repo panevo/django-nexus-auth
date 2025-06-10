@@ -6,15 +6,15 @@ from nexus_auth.exceptions import (
     AccessTokenExchangeError,
     InvalidTokenResponseError,
     MissingAccessTokenError,
-    MicrosoftGraphAPIError
+    MicrosoftGraphAPIError,
 )
 from nexus_auth.providers.base import OAuth2IdentityProvider, ProviderBuilder
 
 
 class MicrosoftEntraTenantOAuth2Provider(OAuth2IdentityProvider):
     """Microsoft Entra (formerly Azure AD) tenant OAuth2 provider.
-    
-    Note: Microsoft Entra requires sending a request to the Microsoft Graph API to get the user's email address 
+
+    Note: Microsoft Entra requires sending a request to the Microsoft Graph API to get the user's email address
     as documented here: https://learn.microsoft.com/en-us/entra/identity-platform/id-tokens#claims-in-an-id-token
     """
 
