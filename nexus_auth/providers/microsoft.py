@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Optional
 
 import requests
 
@@ -28,7 +28,7 @@ class MicrosoftEntraTenantOAuth2Provider(OAuth2IdentityProvider):
 
     def fetch_access_token(
         self, authorization_code: str, code_verifier: str, redirect_uri: str
-    ) -> Dict:
+    ) -> str:
         """Exchange authorization code for an access token.
 
         Args:
@@ -37,7 +37,7 @@ class MicrosoftEntraTenantOAuth2Provider(OAuth2IdentityProvider):
             redirect_uri: Redirect URI used in the authorization request
 
         Returns:
-            Dict containing ID token and other token response data
+            str: Access token
 
         Raises:
             AccessTokenExchangeError: If the token exchange requests fails

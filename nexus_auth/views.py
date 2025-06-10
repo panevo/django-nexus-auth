@@ -16,7 +16,7 @@ from nexus_auth.exceptions import (
     InvalidTokenResponseError,
     MicrosoftGraphAPIError,
     AccessTokenExchangeError,
-    MissingAccessTokenError,
+    MissingEmailFromProviderError,
 )
 from nexus_auth.serializers import (
     OAuth2ExchangeSerializer,
@@ -71,6 +71,9 @@ class OAuthExchangeView(APIView):
 
         Raises:
             NoActiveProviderError: If no active provider is found
+            MissingEmailFromProviderError: If no email is returned from the provider
+            NoAssociatedUserError: If no user is associated with the provider
+            UserNotActiveError: If the user is not active
         """
         serializer = OAuth2ExchangeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -88,18 +91,20 @@ class OAuthExchangeView(APIView):
                 code_verifier=serializer.validated_data["code_verifier"],
                 redirect_uri=serializer.validated_data["redirect_uri"],
             )
+
         except (
             IDTokenExchangeError,
             MissingIDTokenError,
             InvalidTokenResponseError,
             MicrosoftGraphAPIError,
             AccessTokenExchangeError,
-            MissingAccessTokenError,
         ) as e:
             return Response(
                 {"error": str(e), "code": e.default_code}, status=e.status_code
             )
 
+        if not email:
+            raise MissingEmailFromProviderError()
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist as e:

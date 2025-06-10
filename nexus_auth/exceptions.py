@@ -70,3 +70,9 @@ class MicrosoftGraphAPIError(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = "Error when retrieving user email from Microsoft Graph API"
     default_code = "microsoft_graph_api_error"
+
+
+class MissingEmailFromProviderError(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = "No email returned from provider"
+    default_code = "missing_email_from_provider"
