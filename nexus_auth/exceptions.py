@@ -67,7 +67,7 @@ class InvalidTokenResponseError(APIException):
 
 
 class MicrosoftGraphAPIError(APIException):
-    status_code = status.HTTP_400_BAD_REQUEST
+    status_code = status.HTTP_503_SERVICE_UNAVAILABLE
     default_detail = "Error when retrieving user email from Microsoft Graph API"
     default_code = "microsoft_graph_api_error"
 

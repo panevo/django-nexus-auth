@@ -91,7 +91,6 @@ class OAuthExchangeView(APIView):
                 code_verifier=serializer.validated_data["code_verifier"],
                 redirect_uri=serializer.validated_data["redirect_uri"],
             )
-
         except (
             IDTokenExchangeError,
             MissingIDTokenError,
