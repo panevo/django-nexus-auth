@@ -8,14 +8,10 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from nexus_auth.exceptions import (
+    NexusAuthBaseException,
     NoActiveProviderError,
     NoAssociatedUserError,
     UserNotActiveError,
-    IDTokenExchangeError,
-    MissingIDTokenError,
-    InvalidTokenResponseError,
-    MicrosoftGraphAPIError,
-    AccessTokenExchangeError,
     MissingEmailFromProviderError,
 )
 from nexus_auth.serializers import (
@@ -91,13 +87,7 @@ class OAuthExchangeView(APIView):
                 code_verifier=serializer.validated_data["code_verifier"],
                 redirect_uri=serializer.validated_data["redirect_uri"],
             )
-        except (
-            IDTokenExchangeError,
-            MissingIDTokenError,
-            InvalidTokenResponseError,
-            MicrosoftGraphAPIError,
-            AccessTokenExchangeError,
-        ) as e:
+        except NexusAuthBaseException as e:
             return Response(
                 {"error": str(e), "code": e.default_code}, status=e.status_code
             )

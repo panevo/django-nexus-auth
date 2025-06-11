@@ -112,7 +112,7 @@ class OAuth2IdentityProvider(ABC):
 
         try:
             token_data = response.json()
-        except ValueError as e:
+        except requests.exceptions.JSONDecodeError as e:
             raise InvalidTokenResponseError() from e
 
         if "id_token" not in token_data:

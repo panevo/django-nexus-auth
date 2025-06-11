@@ -67,7 +67,7 @@ class MicrosoftEntraTenantOAuth2Provider(OAuth2IdentityProvider):
 
         try:
             token_data = response.json()
-        except ValueError as e:
+        except requests.exceptions.JSONDecodeError as e:
             raise InvalidTokenResponseError() from e
 
         if "access_token" not in token_data:
@@ -105,7 +105,7 @@ class MicrosoftEntraTenantOAuth2Provider(OAuth2IdentityProvider):
 
         try:
             user_data = response.json()
-        except ValueError as e:
+        except requests.exceptions.JSONDecodeError as e:
             raise InvalidTokenResponseError() from e
 
         # Select the User Principal Name (UPN) as the email address

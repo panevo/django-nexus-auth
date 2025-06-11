@@ -2,6 +2,7 @@ from unittest.mock import patch
 
 import jwt
 import pytest
+from requests.exceptions import JSONDecodeError
 from requests import RequestException
 from nexus_auth.exceptions import MissingIDTokenError, IDTokenExchangeError, InvalidTokenResponseError, MicrosoftGraphAPIError, AccessTokenExchangeError, MissingAccessTokenError
 from nexus_auth.providers.base import OAuth2IdentityProvider
@@ -58,7 +59,7 @@ class TestMockOAuth2Provider:
     @patch("requests.post")
     def test_fetch_id_token_invalid_json(self, mock_post, provider):
         mock_post.return_value.status_code = 200
-        mock_post.return_value.json.side_effect = ValueError
+        mock_post.return_value.json.side_effect = JSONDecodeError("Invalid JSON", "{", 0)
 
         with pytest.raises(InvalidTokenResponseError):
             provider.fetch_id_token("auth_code", "verifier", "https://redirect.url")
@@ -96,7 +97,7 @@ class TestMicrosoftEntraTenantOAuth2Provider:
     @patch("requests.post")
     def test_fetch_access_token_invalid_json(self, mock_post, provider):
         mock_post.return_value.status_code = 200
-        mock_post.return_value.json.side_effect = ValueError
+        mock_post.return_value.json.side_effect = JSONDecodeError("Invalid JSON", "{", 0)
 
         with pytest.raises(InvalidTokenResponseError):
             provider.fetch_access_token("auth_code", "verifier", "https://redirect.url")
@@ -120,7 +121,7 @@ class TestMicrosoftEntraTenantOAuth2Provider:
     @patch("requests.get")
     def test_fetch_user_email_invalid_json(self, mock_get, provider):
         mock_get.return_value.status_code = 200
-        mock_get.return_value.json.side_effect = ValueError
+        mock_get.return_value.json.side_effect = JSONDecodeError("Invalid JSON", "{", 0)
 
         with pytest.raises(InvalidTokenResponseError):
             provider.fetch_user_email("wrong_access_token")
