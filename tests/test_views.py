@@ -4,14 +4,15 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse
 
 import pytest
+from rest_framework import status
+from rest_framework.test import APIClient
 from nexus_auth.exceptions import (
     NoActiveProviderError,
     NoAssociatedUserError,
     UserNotActiveError,
+    MissingEmailFromProviderError,
 )
 from nexus_auth.utils import build_oauth_provider
-from rest_framework import status
-from rest_framework.test import APIClient
 from nexus_auth.settings import nexus_settings
 
 User = get_user_model()
@@ -85,3 +86,15 @@ def test_oauth_exchange_inactive_user(api_client, active_user, mock_fetch_id_tok
     })
     assert response.status_code == UserNotActiveError.status_code
     assert response.data["detail"] == UserNotActiveError.default_detail
+
+@pytest.mark.django_db
+def test_oauth_exchange_missing_email(api_client, active_user, mock_fetch_id_token):
+    """Test that the OAuth exchange endpoint returns an error when the email is missing from the provider response."""
+    with patch("nexus_auth.providers.base.OAuth2IdentityProvider.extract_email_from_id_token", return_value=None):
+        response = api_client.post(reverse("oauth-exchange", args=["google"]), data={
+            "code": "auth_code",
+            "code_verifier": "verifier",
+            "redirect_uri": "https://app.com/callback"
+        })
+        assert response.status_code == MissingEmailFromProviderError.status_code
+        assert response.data["detail"] == MissingEmailFromProviderError.default_detail

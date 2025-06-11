@@ -1,12 +1,13 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Optional
+from typing import Optional
 from urllib.parse import urlencode
 
 import requests
+import jwt
 from nexus_auth.exceptions import (
     MissingIDTokenError,
     IDTokenExchangeError,
-    InvalidTokenError,
+    InvalidTokenResponseError,
 )
 
 
@@ -63,15 +64,17 @@ class OAuth2IdentityProvider(ABC):
         query_params = {
             "client_id": self.client_id,
             "response_type": "code",
-            "scope": "openid email",
+            "scope": "openid email profile",
         }
 
         return f"{self.get_authorization_url()}?{urlencode(query_params)}"
 
     def fetch_id_token(
         self, authorization_code: str, code_verifier: str, redirect_uri: str
-    ) -> Dict:
-        """Exchange authorization code for an ID token.
+    ) -> str:
+        """Exchange authorization code for an ID token. This ID token
+        usually contains information about the user and can be used to
+        authenticate the user.
 
         Args:
             authorization_code: OAuth2 authorization code
@@ -79,12 +82,12 @@ class OAuth2IdentityProvider(ABC):
             redirect_uri: Redirect URI used in the authorization request
 
         Returns:
-            Dict containing ID token and other token response data
+            str: ID token
 
         Raises:
             IDTokenExchangeError: If the token exchange requests fails
             MissingIDTokenError: If the token response is missing the ID token
-            InvalidTokenError: If the token response from the IdP is invalid
+            InvalidTokenResponseError: If the token response from the IdP is invalid
         """
         token_url = self.get_token_url()
         data = {
@@ -109,13 +112,45 @@ class OAuth2IdentityProvider(ABC):
 
         try:
             token_data = response.json()
-        except ValueError as e:
-            raise InvalidTokenError() from e
+        except requests.exceptions.JSONDecodeError as e:
+            raise InvalidTokenResponseError() from e
 
         if "id_token" not in token_data:
             raise MissingIDTokenError()
 
         return token_data["id_token"]
+
+    def extract_email_from_id_token(self, id_token: str) -> Optional[str]:
+        """Extract the user's email address from the ID token.
+
+        Args:
+            id_token: ID token from the IdP
+
+        Returns:
+            Optional[str]: User's email address
+        """
+        decoded_id_token = jwt.decode(id_token, options={"verify_signature": False})
+        return decoded_id_token.get("email", None)
+
+    def exchange_code_for_email(
+        self, authorization_code: str, code_verifier: str, redirect_uri: str
+    ) -> Optional[str]:
+        """Exchange authorization code for an email address.
+
+        Args:
+            authorization_code: OAuth2 authorization code
+            code_verifier: PKCE code verifier
+            redirect_uri: Redirect URI used in the authorization request
+
+        Returns:
+            Optional[str]: User's email address
+        """
+        id_token = self.fetch_id_token(
+            authorization_code=authorization_code,
+            code_verifier=code_verifier,
+            redirect_uri=redirect_uri,
+        )
+        return self.extract_email_from_id_token(id_token)
 
 
 class ProviderBuilder(ABC):

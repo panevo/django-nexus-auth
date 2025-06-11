@@ -2,6 +2,8 @@ from nexus_auth.providers.base import OAuth2IdentityProvider, ProviderBuilder
 
 
 class GoogleOAuth2Provider(OAuth2IdentityProvider):
+    """Google OAuth2 provider."""
+
     def get_authorization_url(self):
         return "https://accounts.google.com/o/oauth2/v2/auth"
 
