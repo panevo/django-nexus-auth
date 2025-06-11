@@ -3,9 +3,11 @@ from django.core.exceptions import ImproperlyConfigured
 from rest_framework import status
 from rest_framework.exceptions import APIException
 
+
 class NexusAuthBaseException(APIException):
     """Base exception for all Nexus Auth exceptions."""
     pass
+
 
 class MultipleActiveProvidersError(ImproperlyConfigured):
     def __init__(self) -> None:
