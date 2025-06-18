@@ -95,7 +95,8 @@ class OAuthExchangeView(APIView):
         if not email:
             raise MissingEmailFromProviderError()
         try:
-            user = User.objects.get(email=email)
+            # Match the email case-insensitively
+            user = User.objects.get(email__iexact=email)
         except User.DoesNotExist as e:
             raise NoAssociatedUserError() from e
 
