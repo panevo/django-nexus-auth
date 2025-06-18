@@ -2,6 +2,10 @@
 
 ## [UNRELEASED]
 
+## 0.1.4 (2025-06-18)
+
+- [#15](https://github.com/panevo/django-nexus-auth/pull/15) User email address matching to be case insensitive
+
 ## 0.1.3 (2025-06-12)
 
 ### Added
