@@ -90,7 +90,7 @@ class OAuthExchangeView(APIView):
 
     def authenticate_user_with_provider(
         self, request: Request, provider_type: str
-    ) -> Optional[User]:
+    ) -> User:
         """Exchange the authorization code with the IdP and return the associated user object
 
         Args:
@@ -104,7 +104,6 @@ class OAuthExchangeView(APIView):
             NoActiveProviderError: If no active provider is found
             MissingEmailFromProviderError: If no email is returned from the provider
             NoAssociatedUserError: If no user is associated with the provider
-            UserNotActiveError: If the user is not active
             EmailExtractionError: If the email cannot be extracted from the provider
         """
 
@@ -130,7 +129,6 @@ class OAuthExchangeView(APIView):
         if not email:
             raise MissingEmailFromProviderError()
 
-        user = None
         try:
             # Match the email case-insensitively
             user = User.objects.get(email__iexact=email)
