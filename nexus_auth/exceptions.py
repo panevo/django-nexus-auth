@@ -6,6 +6,7 @@ from rest_framework.exceptions import APIException
 
 class NexusAuthBaseException(APIException):
     """Base exception for all Nexus Auth exceptions."""
+
     pass
 
 
@@ -81,3 +82,9 @@ class MissingEmailFromProviderError(NexusAuthBaseException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = "No email returned from provider"
     default_code = "missing_email_from_provider"
+
+
+class EmailExtractionError(NexusAuthBaseException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = "Error when extracting email from the identity provider."
+    default_code = "email_extraction_error"

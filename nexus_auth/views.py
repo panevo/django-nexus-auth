@@ -13,6 +13,7 @@ from nexus_auth.exceptions import (
     NoAssociatedUserError,
     UserNotActiveError,
     MissingEmailFromProviderError,
+    EmailExtractionError,
 )
 from nexus_auth.serializers import (
     OAuth2ExchangeSerializer,
@@ -56,7 +57,7 @@ class OAuthExchangeView(APIView):
     permission_classes = (AllowAny,)
 
     def post(self, request: Request, provider_type: str) -> Response:
-        """Exchange the authorization code with the active provider for the application's JWT tokens.
+        """
 
         Args:
             request: HTTP request containing the authorization code
@@ -70,7 +71,43 @@ class OAuthExchangeView(APIView):
             MissingEmailFromProviderError: If no email is returned from the provider
             NoAssociatedUserError: If no user is associated with the provider
             UserNotActiveError: If the user is not active
+            EmailExtractionError: If the email cannot be extracted from the provider
         """
+
+        user = self.authenticate_user_with_provider(request, provider_type)
+        if not user.is_active:
+            raise UserNotActiveError()
+
+        refresh_token = RefreshToken.for_user(user)
+        access_token = refresh_token.access_token
+
+        # Trigger user_logged_in signal
+        user_logged_in.send(sender=self.__class__, request=request, user=user)
+
+        return Response(
+            {"refresh": str(refresh_token), "access": str(access_token)}, status=200
+        )
+
+    def authenticate_user_with_provider(
+        self, request: Request, provider_type: str
+    ) -> Optional[User]:
+        """Exchange the authorization code with the IdP and return the associated user object
+
+        Args:
+            request: HTTP request containing the authorization code
+            provider_type: Type of provider to use
+
+        Returns:
+            User: User associated with the authorization code
+
+        Raises:
+            NoActiveProviderError: If no active provider is found
+            MissingEmailFromProviderError: If no email is returned from the provider
+            NoAssociatedUserError: If no user is associated with the provider
+            UserNotActiveError: If the user is not active
+            EmailExtractionError: If the email cannot be extracted from the provider
+        """
+
         serializer = OAuth2ExchangeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -88,27 +125,16 @@ class OAuthExchangeView(APIView):
                 redirect_uri=serializer.validated_data["redirect_uri"],
             )
         except NexusAuthBaseException as e:
-            return Response(
-                {"error": str(e), "code": e.default_code}, status=e.status_code
-            )
+            raise EmailExtractionError() from e
 
         if not email:
             raise MissingEmailFromProviderError()
+
+        user = None
         try:
             # Match the email case-insensitively
             user = User.objects.get(email__iexact=email)
         except User.DoesNotExist as e:
             raise NoAssociatedUserError() from e
 
-        if not user.is_active:
-            raise UserNotActiveError()
-
-        refresh_token = RefreshToken.for_user(user)
-        access_token = refresh_token.access_token
-
-        # Trigger user_logged_in signal
-        user_logged_in.send(sender=self.__class__, request=request, user=user)
-
-        return Response(
-            {"refresh": str(refresh_token), "access": str(access_token)}, status=200
-        )
+        return user

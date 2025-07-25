@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 
+from jwt import DecodeError
 import pytest
 from rest_framework import status
 from rest_framework.test import APIClient
@@ -11,6 +12,10 @@ from nexus_auth.exceptions import (
     NoAssociatedUserError,
     UserNotActiveError,
     MissingEmailFromProviderError,
+    EmailExtractionError,
+    IDTokenExchangeError,
+    InvalidTokenResponseError,
+    MissingIDTokenError,
 )
 from nexus_auth.utils import build_oauth_provider
 from nexus_auth.settings import nexus_settings
@@ -98,3 +103,35 @@ def test_oauth_exchange_missing_email(api_client, active_user, mock_fetch_id_tok
         })
         assert response.status_code == MissingEmailFromProviderError.status_code
         assert response.data["detail"] == MissingEmailFromProviderError.default_detail
+
+@pytest.mark.django_db
+def test_oauth_exchange_email_extraction_error(api_client, active_user, mock_fetch_id_token):
+    """Test that the OAuth exchange endpoint returns an error when email extraction fails"""
+    with patch("nexus_auth.providers.base.OAuth2IdentityProvider.extract_email_from_id_token", side_effect=IDTokenExchangeError):
+        response = api_client.post(reverse("oauth-exchange", args=["google"]), data={
+            "code": "auth_code",
+            "code_verifier": "verifier",
+            "redirect_uri": "https://app.com/callback"
+        })
+        assert response.status_code == EmailExtractionError.status_code
+        assert response.data["detail"] == EmailExtractionError.default_detail
+            
+    with patch("nexus_auth.providers.base.OAuth2IdentityProvider.extract_email_from_id_token", side_effect=MissingIDTokenError):
+        response = api_client.post(reverse("oauth-exchange", args=["google"]), data={
+            "code": "auth_code",
+            "code_verifier": "verifier",
+            "redirect_uri": "https://app.com/callback"
+        })
+        assert response.status_code == EmailExtractionError.status_code
+        assert response.data["detail"] == EmailExtractionError.default_detail
+            
+    with patch("nexus_auth.providers.base.OAuth2IdentityProvider.extract_email_from_id_token", side_effect=InvalidTokenResponseError):
+        response = api_client.post(reverse("oauth-exchange", args=["google"]), data={
+            "code": "auth_code",
+            "code_verifier": "verifier",
+            "redirect_uri": "https://app.com/callback"
+        })
+        assert response.status_code == EmailExtractionError.status_code
+        assert response.data["detail"] == EmailExtractionError.default_detail
+        
+    
