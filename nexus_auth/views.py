@@ -13,6 +13,7 @@ from nexus_auth.exceptions import (
     NoAssociatedUserError,
     UserNotActiveError,
     MissingEmailFromProviderError,
+    EmailExtractionError,
 )
 from nexus_auth.serializers import (
     OAuth2ExchangeSerializer,
@@ -56,7 +57,7 @@ class OAuthExchangeView(APIView):
     permission_classes = (AllowAny,)
 
     def post(self, request: Request, provider_type: str) -> Response:
-        """Exchange the authorization code with the active provider for the application's JWT tokens.
+        """
 
         Args:
             request: HTTP request containing the authorization code
@@ -70,36 +71,18 @@ class OAuthExchangeView(APIView):
             MissingEmailFromProviderError: If no email is returned from the provider
             NoAssociatedUserError: If no user is associated with the provider
             UserNotActiveError: If the user is not active
+            EmailExtractionError: If the email cannot be extracted from the provider
         """
         serializer = OAuth2ExchangeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        providers_config = nexus_settings.get_providers_config(request=request)
-        provider: Optional[OAuth2IdentityProvider] = build_oauth_provider(
-            provider_type, providers_config
+        user = self.authenticate_user_with_provider(
+            request,
+            provider_type,
+            serializer.validated_data["code"],
+            serializer.validated_data["code_verifier"],
+            serializer.validated_data["redirect_uri"],
         )
-        if not provider:
-            raise NoActiveProviderError()
-
-        try:
-            email: Optional[str] = provider.exchange_code_for_email(
-                authorization_code=serializer.validated_data["code"],
-                code_verifier=serializer.validated_data["code_verifier"],
-                redirect_uri=serializer.validated_data["redirect_uri"],
-            )
-        except NexusAuthBaseException as e:
-            return Response(
-                {"error": str(e), "code": e.default_code}, status=e.status_code
-            )
-
-        if not email:
-            raise MissingEmailFromProviderError()
-        try:
-            # Match the email case-insensitively
-            user = User.objects.get(email__iexact=email)
-        except User.DoesNotExist as e:
-            raise NoAssociatedUserError() from e
-
         if not user.is_active:
             raise UserNotActiveError()
 
@@ -112,3 +95,56 @@ class OAuthExchangeView(APIView):
         return Response(
             {"refresh": str(refresh_token), "access": str(access_token)}, status=200
         )
+
+    def authenticate_user_with_provider(
+        self,
+        request: Request,
+        provider_type: str,
+        authorization_code: str,
+        code_verifier: str,
+        redirect_uri: str,
+    ) -> User:
+        """Exchange the authorization code with the IdP and return the associated user object
+
+        Args:
+            request: HTTP request containing the authorization code
+            provider_type: Type of provider to use
+            authorization_code: Authorization code
+            code_verifier: Code verifier
+            redirect_uri: Redirect URI
+
+        Returns:
+            User: User associated with the authorization code
+
+        Raises:
+            NoActiveProviderError: If no active provider is found
+            MissingEmailFromProviderError: If no email is returned from the provider
+            NoAssociatedUserError: If no user is associated with the provider
+            EmailExtractionError: If the email cannot be extracted from the provider
+        """
+        providers_config = nexus_settings.get_providers_config(request=request)
+        provider: Optional[OAuth2IdentityProvider] = build_oauth_provider(
+            provider_type, providers_config
+        )
+        if not provider:
+            raise NoActiveProviderError()
+
+        try:
+            email: Optional[str] = provider.exchange_code_for_email(
+                authorization_code=authorization_code,
+                code_verifier=code_verifier,
+                redirect_uri=redirect_uri,
+            )
+        except NexusAuthBaseException as e:
+            raise EmailExtractionError() from e
+
+        if not email:
+            raise MissingEmailFromProviderError()
+
+        try:
+            # Match the email case-insensitively
+            user = User.objects.get(email__iexact=email)
+        except User.DoesNotExist as e:
+            raise NoAssociatedUserError() from e
+
+        return user
