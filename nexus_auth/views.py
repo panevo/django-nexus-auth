@@ -73,8 +73,16 @@ class OAuthExchangeView(APIView):
             UserNotActiveError: If the user is not active
             EmailExtractionError: If the email cannot be extracted from the provider
         """
+        serializer = OAuth2ExchangeSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        user = self.authenticate_user_with_provider(request, provider_type)
+        user = self.authenticate_user_with_provider(
+            request,
+            provider_type,
+            serializer.validated_data["code"],
+            serializer.validated_data["code_verifier"],
+            serializer.validated_data["redirect_uri"],
+        )
         if not user.is_active:
             raise UserNotActiveError()
 
@@ -89,7 +97,12 @@ class OAuthExchangeView(APIView):
         )
 
     def authenticate_user_with_provider(
-        self, request: Request, provider_type: str
+        self,
+        request: Request,
+        provider_type: str,
+        authorization_code: str,
+        code_verifier: str,
+        redirect_uri: str,
     ) -> User:
         """Exchange the authorization code with the IdP and return the associated user object
 
@@ -106,10 +119,6 @@ class OAuthExchangeView(APIView):
             NoAssociatedUserError: If no user is associated with the provider
             EmailExtractionError: If the email cannot be extracted from the provider
         """
-
-        serializer = OAuth2ExchangeSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
         providers_config = nexus_settings.get_providers_config(request=request)
         provider: Optional[OAuth2IdentityProvider] = build_oauth_provider(
             provider_type, providers_config
@@ -119,9 +128,9 @@ class OAuthExchangeView(APIView):
 
         try:
             email: Optional[str] = provider.exchange_code_for_email(
-                authorization_code=serializer.validated_data["code"],
-                code_verifier=serializer.validated_data["code_verifier"],
-                redirect_uri=serializer.validated_data["redirect_uri"],
+                authorization_code=authorization_code,
+                code_verifier=code_verifier,
+                redirect_uri=redirect_uri,
             )
         except NexusAuthBaseException as e:
             raise EmailExtractionError() from e
