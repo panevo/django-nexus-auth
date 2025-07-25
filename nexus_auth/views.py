@@ -109,6 +109,9 @@ class OAuthExchangeView(APIView):
         Args:
             request: HTTP request containing the authorization code
             provider_type: Type of provider to use
+            authorization_code: Authorization code
+            code_verifier: Code verifier
+            redirect_uri: Redirect URI
 
         Returns:
             User: User associated with the authorization code
