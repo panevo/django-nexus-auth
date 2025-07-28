@@ -2,9 +2,19 @@
 
 ## [UNRELEASED]
 
-## 0.1.4 (2025-06-18)
+## 0.1.6 (2025-07-28)
+
+### Added
+
+- [#16](https://github.com/panevo/django-nexus-auth/pull/16) Separate function for extracting user after IdP authentication
+
+## 0.1.5 (2025-06-19)
 
 - [#15](https://github.com/panevo/django-nexus-auth/pull/15) User email address matching to be case insensitive
+
+## 0.1.4 (2025-06-18)
+
+Due to a release error, version 0.1.4 has identical source code to 0.1.3. Please use 0.1.3 or 0.1.5 instead.
 
 ## 0.1.3 (2025-06-12)
 
