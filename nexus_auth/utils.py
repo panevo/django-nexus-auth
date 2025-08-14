@@ -46,4 +46,4 @@ def load_providers_config(
     Returns:
         Dict[str, Dict[str, str]]: Provider configuration
     """
-    return nexus_settings.providers_config()
+    return nexus_settings.providers_config_setting()

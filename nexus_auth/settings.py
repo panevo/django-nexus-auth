@@ -34,8 +34,8 @@ class NexusAuthSettings:
 
         return user_settings
 
-    def providers_config(self) -> Dict[str, Dict[str, str]]:
-        """Get the CONFIG setting with fresh fetch.
+    def providers_config_setting(self) -> Dict[str, Dict[str, str]]:
+        """Get the CONFIG setting. This contains the value you have set in your Django settings.
 
         Returns:
             Dict[str, Dict[str, str]]: Provider configuration
@@ -45,14 +45,14 @@ class NexusAuthSettings:
             raise NoActiveProviderError()
         return provider_config
 
-    def get_providers_config(self, **kwargs) -> Optional[Dict[str, Dict[str, str]]]:
-        """Call the providers configuration handler with fresh settings each time.
+    def get_providers_config(self, **kwargs) -> Dict[str, Dict[str, str]]:
+        """Call the providers configuration handler and load the configuration. 
 
         Args:
             **kwargs: Additional keyword arguments to pass to the handler
 
         Returns:
-            Optional[Dict[str, Dict[str, str]]]: Provider configuration
+            Dict[str, Dict[str, str]]: Provider configuration
         """
         user_settings = self._get_user_settings()
         handler_path = user_settings.get(self._FIELD_HANDLER)
@@ -62,7 +62,7 @@ class NexusAuthSettings:
         return None
 
     def get_provider_builders(self) -> Dict[str, str]:
-        """Get the PROVIDER_BUILDERS setting with fresh fetch.
+        """Get the PROVIDER_BUILDERS setting.
 
         Returns:
             Dict[str, str]: Builder configuration

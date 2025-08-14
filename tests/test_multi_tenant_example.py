@@ -5,7 +5,7 @@ from django.test import TestCase
 from nexus_auth.settings import nexus_settings
 from nexus_auth.views import OAuthProvidersView
 from rest_framework.test import APIRequestFactory
-
+from django.test.utils import override_settings
 from typing import Optional, Dict
 
 
@@ -41,28 +41,25 @@ def multi_tenant_load_providers_config(request) -> Optional[Dict[str, Dict[str, 
     """Get the provider configuration for the current tenant."""
     tenant = request.tenant
     if tenant and tenant.schema_name:
-        print(f"Handler called for tenant: {tenant.schema_name}")
-        
-        # Get the full provider config
-        full_config = nexus_settings.providers_config()
-        print(f"Full config from nexus_settings: {full_config}")
-        
-        # Get the tenant-specific config
-        provider_settings = full_config.get(tenant.schema_name)
-        print(f"Tenant-specific config for {tenant.schema_name}: {provider_settings}")
-        
+        provider_settings = nexus_settings.providers_config_setting().get(tenant.schema_name)
         if provider_settings:
             return provider_settings
 
     return None
 
 
+@override_settings(NEXUS_AUTH={
+    "CONFIG": TENANT_CONFIG,
+    "PROVIDERS_HANDLER": "test_multi_tenant_example.multi_tenant_load_providers_config",
+})
 class TenantCacheTest(TestCase):
     def setUp(self):
         settings.NEXUS_AUTH = {
             "CONFIG": copy.deepcopy(TENANT_CONFIG),
             "PROVIDERS_HANDLER": "test_multi_tenant_example.multi_tenant_load_providers_config",
         }
+
+   
 
     def test_old_settings_cache_issue(self):
         """Test that old settings module-level singleton causes caching bug in production."""
