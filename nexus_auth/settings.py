@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from django.conf import settings
 from django.utils.module_loading import import_string
@@ -13,7 +13,6 @@ class NexusAuthSettings:
     _DEFAULT_HANDLER = "nexus_auth.utils.load_providers_config"
 
     def __init__(self, defaults=None):
-        # Only store defaults - no tenant-specific data cached here
         self.defaults = defaults or {}
 
     def __getattr__(self, attr: str) -> Any:
@@ -35,7 +34,7 @@ class NexusAuthSettings:
         return user_settings
 
     def providers_config_setting(self) -> Dict[str, Dict[str, str]]:
-        """Get the CONFIG setting. This contains the value you have set in your Django settings.
+        """Get the CONFIG setting. This will be the value you have set in your Django settings for NEXUS_AUTH.CONFIG.
 
         Returns:
             Dict[str, Dict[str, str]]: Provider configuration
@@ -47,6 +46,7 @@ class NexusAuthSettings:
 
     def get_providers_config(self, **kwargs) -> Dict[str, Dict[str, str]]:
         """Call the providers configuration handler and load the configuration. 
+        This will interface for getting the provider configs in the views.
 
         Args:
             **kwargs: Additional keyword arguments to pass to the handler
