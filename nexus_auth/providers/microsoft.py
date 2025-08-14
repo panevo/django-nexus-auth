@@ -139,8 +139,7 @@ class MicrosoftEntraTenantOAuth2Provider(OAuth2IdentityProvider):
 
 class MicrosoftEntraTenantOAuth2ProviderBuilder(ProviderBuilder):
     def __call__(self, client_id, client_secret, tenant_id, **_ignored):
-        if self._instance is None:
-            self._instance = MicrosoftEntraTenantOAuth2Provider(
-                client_id, client_secret, tenant_id
-            )
-        return self._instance
+        # Always create a fresh instance for multitenant support
+        return MicrosoftEntraTenantOAuth2Provider(
+            client_id, client_secret, tenant_id
+        )

@@ -13,6 +13,4 @@ class GoogleOAuth2Provider(OAuth2IdentityProvider):
 
 class GoogleOAuth2ProviderBuilder(ProviderBuilder):
     def __call__(self, client_id, client_secret, **_ignored):
-        if self._instance is None:
-            self._instance = GoogleOAuth2Provider(client_id, client_secret)
-        return self._instance
+        return GoogleOAuth2Provider(client_id, client_secret)
