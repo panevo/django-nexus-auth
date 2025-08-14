@@ -29,7 +29,7 @@ class TestNexusAuthSettings(SimpleTestCase):
         """Create a NexusAuthSettings instance with default settings."""
         self.nexus_auth_settings = NexusAuthSettings(defaults=DEFAULTS)
 
-    def _builders_config(self):
+    def test_get_providers_config(self):
         config = self.nexus_auth_settings.get_providers_config()
         self.assertEqual(config, {
             "microsoft_tenant": {
