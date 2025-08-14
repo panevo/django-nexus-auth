@@ -27,7 +27,7 @@ def nexus_auth_settings(default_settings):
     return NexusAuthSettings(user_settings=default_settings, defaults=DEFAULTS)
 
 def test_default_get_providers_config(nexus_auth_settings):
-    config = nexus_auth_settings.providers_config_setting()
+    config = nexus_auth_settings.get_providers_config()
     assert config == {
         "microsoft_tenant": {
             "client_id": "test_client_id",
