@@ -22,10 +22,9 @@ class NexusAuthSettings:
 
     def _get_user_settings(self) -> Dict[str, Any]:
         """
-        Always fetch a fresh copy of user settings from Django's settings.
-        This avoids keeping a stale/mutated version in memory and fixes the multitenant bug.
+        Get the NEXUS_AUTH setting from Django's settings. 
         """
-        user_settings = getattr(settings, self._FIELD_NEXUS_AUTH, {}).copy()
+        user_settings = getattr(settings, self._FIELD_NEXUS_AUTH, {})
 
         # If CONFIG is provided but no handler is set, use the default handler
         if self._FIELD_PROVIDERS in user_settings and self._FIELD_HANDLER not in user_settings:
@@ -45,8 +44,8 @@ class NexusAuthSettings:
         return provider_config
 
     def get_providers_config(self, **kwargs) -> Dict[str, Dict[str, str]]:
-        """Call the providers configuration handler and load the configuration. 
-        This will interface for getting the provider configs in the views.
+        """Call the providers configuration handler that was set in the NEXUS_AUTH.PROVIDERS_HANDLER setting. 
+        This function is the interface for getting the provider(s) config in the views.
 
         Args:
             **kwargs: Additional keyword arguments to pass to the handler
