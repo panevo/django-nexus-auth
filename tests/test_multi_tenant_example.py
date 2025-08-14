@@ -47,7 +47,7 @@ def multi_tenant_load_providers_config(request) -> Optional[Dict[str, Dict[str, 
     "CONFIG": TENANT_CONFIG,
     "PROVIDERS_HANDLER": "test_multi_tenant_example.multi_tenant_load_providers_config",
 })
-class TenantCacheTest(TestCase):
+class MultiTenantExampleTest(TestCase):
     """Tests that provider settings are correctly isolated per tenant in a multi-tenant setup."""
 
     def test_provider_config_is_isolated_between_tenants(self):
