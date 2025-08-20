@@ -17,8 +17,7 @@ from nexus_auth.exceptions import (
     InvalidTokenResponseError,
     MissingIDTokenError,
 )
-from nexus_auth.utils import build_oauth_provider
-from nexus_auth.settings import nexus_settings
+from nexus_auth.providers.google import GoogleOAuth2Provider
 
 User = get_user_model()
 
@@ -33,13 +32,12 @@ def active_user(db):
 @pytest.fixture
 def mock_fetch_id_token():
     """Mock the fetch_id_token method of the OAuth provider."""
-    with patch("nexus_auth.utils.build_oauth_provider") as mock_provider, \
+    with patch("nexus_auth.views.build_oauth_provider") as mock_build_provider, \
          patch("jwt.decode", return_value={"email": "active@example.com"}) as mock_jwt_decode:
-        providers_config = nexus_settings.get_providers_config()
-        provider = build_oauth_provider(provider_type="google", providers_config=providers_config)
+        provider = GoogleOAuth2Provider(client_id="test_client_id", client_secret="test_client_secret")
         provider.fetch_id_token = MagicMock(return_value="fake_id_token")
-        mock_provider.return_value = provider
-        yield mock_provider, mock_jwt_decode
+        mock_build_provider.return_value = provider
+        yield mock_build_provider, mock_jwt_decode
 
 def test_oauth_providers_success(api_client):
     """Test that the OAuth providers endpoint returns the correct providers."""

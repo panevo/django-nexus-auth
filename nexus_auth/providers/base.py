@@ -98,7 +98,6 @@ class OAuth2IdentityProvider(ABC):
             "code_verifier": code_verifier,
             "client_secret": self.client_secret,
         }
-
         try:
             response = requests.post(
                 token_url,

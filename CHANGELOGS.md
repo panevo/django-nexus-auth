@@ -2,6 +2,12 @@
 
 ## [UNRELEASED]
 
+### Added
+
+- [#17](https://github.com/panevo/django-nexus-auth/pull/17) Adjust loading of providers configuration to allow for multi-tenant setups.
+
+Note: There is a breaking change in the settings.py file. `providers_config` function is now called `providers_config_setting`. If you are using this function (e.g. in your custom PROVIDERS_HANDLER), you will need to to update your code accordingly.
+
 ## 0.1.6 (2025-07-28)
 
 ### Added

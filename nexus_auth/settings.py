@@ -6,46 +6,46 @@ from nexus_auth.exceptions import NoActiveProviderError
 
 
 class NexusAuthSettings:
-    _FIELD_USER_SETTINGS = "_user_settings"
     _FIELD_NEXUS_AUTH = "NEXUS_AUTH"
     _FIELD_PROVIDERS = "CONFIG"
     _FIELD_HANDLER = "PROVIDERS_HANDLER"
     _FIELD_BUILDERS = "PROVIDER_BUILDERS"
     _DEFAULT_HANDLER = "nexus_auth.utils.load_providers_config"
 
-    def __init__(self, user_settings=None, defaults=None):
+    def __init__(self, defaults=None):
         self.defaults = defaults or {}
-        self._user_settings = user_settings or getattr(
-            settings, self._FIELD_NEXUS_AUTH, {}
-        )
-
-        # If CONFIG is provided and PROVIDERS_HANDLER is not set, set it to the default handler
-        if (
-            self._FIELD_PROVIDERS in self._user_settings
-            and self._FIELD_HANDLER not in self._user_settings
-        ):
-            self._user_settings[self._FIELD_HANDLER] = self._DEFAULT_HANDLER
 
     def __getattr__(self, attr: str) -> Any:
         if attr in self.defaults:
-            return self._user_settings.get(attr, self.defaults[attr])
-        raise AttributeError(
-            f"'{self.__class__.__name__}' object has no attribute '{attr}'"
-        )
+            return self.defaults[attr]
+        raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{attr}'")
 
-    def providers_config(self) -> Dict[str, Dict[str, str]]:
-        """Get the CONFIG setting.
+    def _get_user_settings(self) -> Dict[str, Any]:
+        """
+        Get the NEXUS_AUTH setting from Django's settings. 
+        """
+        user_settings = getattr(settings, self._FIELD_NEXUS_AUTH, {})
+
+        # If CONFIG is provided but no handler is set, use the default handler
+        if self._FIELD_PROVIDERS in user_settings and self._FIELD_HANDLER not in user_settings:
+            user_settings[self._FIELD_HANDLER] = self._DEFAULT_HANDLER
+
+        return user_settings
+
+    def providers_config_setting(self) -> Dict[str, Dict[str, str]]:
+        """Get the CONFIG setting. This will be the value you have set in your Django settings for NEXUS_AUTH.CONFIG.
 
         Returns:
             Dict[str, Dict[str, str]]: Provider configuration
         """
-        provider_config = self._user_settings.get(self._FIELD_PROVIDERS)
+        provider_config = self._get_user_settings().get(self._FIELD_PROVIDERS)
         if not provider_config:
             raise NoActiveProviderError()
         return provider_config
 
     def get_providers_config(self, **kwargs) -> Dict[str, Dict[str, str]]:
-        """Call the providers configuration handler.
+        """Call the providers configuration handler that was set in the NEXUS_AUTH.PROVIDERS_HANDLER setting. 
+        This function is the interface for getting the provider(s) config in the views.
 
         Args:
             **kwargs: Additional keyword arguments to pass to the handler
@@ -53,10 +53,11 @@ class NexusAuthSettings:
         Returns:
             Dict[str, Dict[str, str]]: Provider configuration
         """
-        handler_path = self._user_settings.get(self._FIELD_HANDLER)
+        user_settings = self._get_user_settings()
+        handler_path = user_settings.get(self._FIELD_HANDLER)
         if handler_path:
-            handler = import_string(handler_path)  # Dynamically import function
-            return handler(**kwargs)  # Call the function
+            handler = import_string(handler_path)
+            return handler(**kwargs)
         return None
 
     def get_provider_builders(self) -> Dict[str, str]:
@@ -65,7 +66,7 @@ class NexusAuthSettings:
         Returns:
             Dict[str, str]: Builder configuration
         """
-        user_builders = self._user_settings.get(self._FIELD_BUILDERS, {})
+        user_builders = self._get_user_settings().get(self._FIELD_BUILDERS, {})
         merged_builders = {
             **self.defaults.get(self._FIELD_BUILDERS, {}),
             **user_builders,
@@ -81,4 +82,4 @@ DEFAULTS = {
     },
 }
 
-nexus_settings = NexusAuthSettings(user_settings=None, defaults=DEFAULTS)
+nexus_settings = NexusAuthSettings(defaults=DEFAULTS)
