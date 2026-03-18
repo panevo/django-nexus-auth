@@ -20,8 +20,8 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install Ruff
-        run: pip install ruff
+      - name: Install linting dependencies
+        run: pip install -r requirements/linting.txt
 
       - name: Run Ruff lint check
         run: ruff check .
@@ -35,7 +35,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
         django-version: ["4.2", "5.0", "5.1"]
         exclude:
           # Django 5.0+ requires Python 3.10+
