@@ -1,7 +1,8 @@
-from typing import Any, Dict
+from typing import Any
 
 from django.conf import settings
 from django.utils.module_loading import import_string
+
 from nexus_auth.exceptions import NoActiveProviderError
 
 
@@ -18,21 +19,26 @@ class NexusAuthSettings:
     def __getattr__(self, attr: str) -> Any:
         if attr in self.defaults:
             return self.defaults[attr]
-        raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{attr}'")
+        raise AttributeError(
+            f"'{self.__class__.__name__}' object has no attribute '{attr}'"
+        )
 
-    def _get_user_settings(self) -> Dict[str, Any]:
+    def _get_user_settings(self) -> dict[str, Any]:
         """
-        Get the NEXUS_AUTH setting from Django's settings. 
+        Get the NEXUS_AUTH setting from Django's settings.
         """
         user_settings = getattr(settings, self._FIELD_NEXUS_AUTH, {})
 
         # If CONFIG is provided but no handler is set, use the default handler
-        if self._FIELD_PROVIDERS in user_settings and self._FIELD_HANDLER not in user_settings:
+        if (
+            self._FIELD_PROVIDERS in user_settings
+            and self._FIELD_HANDLER not in user_settings
+        ):
             user_settings[self._FIELD_HANDLER] = self._DEFAULT_HANDLER
 
         return user_settings
 
-    def providers_config_setting(self) -> Dict[str, Dict[str, str]]:
+    def providers_config_setting(self) -> dict[str, dict[str, str]]:
         """Get the CONFIG setting. This will be the value you have set in your Django settings for NEXUS_AUTH.CONFIG.
 
         Returns:
@@ -43,8 +49,8 @@ class NexusAuthSettings:
             raise NoActiveProviderError()
         return provider_config
 
-    def get_providers_config(self, **kwargs) -> Dict[str, Dict[str, str]]:
-        """Call the providers configuration handler that was set in the NEXUS_AUTH.PROVIDERS_HANDLER setting. 
+    def get_providers_config(self, **kwargs) -> dict[str, dict[str, str]]:
+        """Call the providers configuration handler that was set in the NEXUS_AUTH.PROVIDERS_HANDLER setting.
         This function is the interface for getting the provider(s) config in the views.
 
         Args:
@@ -60,7 +66,7 @@ class NexusAuthSettings:
             return handler(**kwargs)
         return None
 
-    def get_provider_builders(self) -> Dict[str, str]:
+    def get_provider_builders(self) -> dict[str, str]:
         """Get the PROVIDER_BUILDERS setting.
 
         Returns:

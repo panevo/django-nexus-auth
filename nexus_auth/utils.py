@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Optional
 
 from rest_framework.request import Request
 
@@ -9,7 +9,7 @@ from nexus_auth.settings import nexus_settings
 
 
 def build_oauth_provider(
-    provider_type: str, providers_config: Dict[str, Dict[str, str]]
+    provider_type: str, providers_config: dict[str, dict[str, str]]
 ) -> Optional[OAuth2IdentityProvider]:
     """Build an OAuth provider object by provider type.
 
@@ -37,7 +37,7 @@ def build_oauth_provider(
 
 def load_providers_config(
     request: Optional[Request] = None,
-) -> Dict[str, Dict[str, str]]:
+) -> dict[str, dict[str, str]]:
     """Load providers configuration.
 
     Args:

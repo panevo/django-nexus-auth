@@ -1,8 +1,9 @@
 from typing import Optional
 
+from django.utils.module_loading import import_string
+
 from nexus_auth.providers.base import OAuth2IdentityProvider
 from nexus_auth.settings import nexus_settings
-from django.utils.module_loading import import_string
 
 
 class ObjectFactory:

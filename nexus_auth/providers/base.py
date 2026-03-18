@@ -2,12 +2,13 @@ from abc import ABC, abstractmethod
 from typing import Optional
 from urllib.parse import urlencode
 
-import requests
 import jwt
+import requests
+
 from nexus_auth.exceptions import (
-    MissingIDTokenError,
     IDTokenExchangeError,
     InvalidTokenResponseError,
+    MissingIDTokenError,
 )
 
 
