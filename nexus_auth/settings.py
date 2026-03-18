@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 from django.conf import settings
 from django.utils.module_loading import import_string
@@ -49,7 +49,7 @@ class NexusAuthSettings:
             raise NoActiveProviderError()
         return provider_config
 
-    def get_providers_config(self, **kwargs) -> Optional[dict[str, dict[str, str]]]:
+    def get_providers_config(self, **kwargs) -> dict[str, dict[str, str]] | None:
         """Call the providers configuration handler that was set in the NEXUS_AUTH.PROVIDERS_HANDLER setting.
         This function is the interface for getting the provider(s) config in the views.
 

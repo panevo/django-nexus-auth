@@ -9,6 +9,7 @@ setup(
         "djangorestframework>=3.14.0",
         "djangorestframework-simplejwt>=5.4.0",
     ],
+    python_requires=">=3.10",
     author="Gabriel Tan",
     author_email="gabriel.tan@panevo.com",
     description="OIDC Authentication for Django REST Framework with JWT support",
@@ -20,6 +21,9 @@ setup(
         "Framework :: Django",
         "Intended Audience :: Developers",
         "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
 )
