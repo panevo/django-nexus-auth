@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import Optional
 from urllib.parse import urlencode
 
 import jwt
@@ -25,7 +24,7 @@ class OAuth2IdentityProvider(ABC):
         self,
         client_id: str,
         client_secret: str,
-        tenant_id: Optional[str] = None,
+        tenant_id: str | None = None,
     ) -> None:
         """Initialize the OAuth2 provider.
 
@@ -120,7 +119,7 @@ class OAuth2IdentityProvider(ABC):
 
         return token_data["id_token"]
 
-    def extract_email_from_id_token(self, id_token: str) -> Optional[str]:
+    def extract_email_from_id_token(self, id_token: str) -> str | None:
         """Extract the user's email address from the ID token.
 
         Args:
@@ -134,7 +133,7 @@ class OAuth2IdentityProvider(ABC):
 
     def exchange_code_for_email(
         self, authorization_code: str, code_verifier: str, redirect_uri: str
-    ) -> Optional[str]:
+    ) -> str | None:
         """Exchange authorization code for an email address.
 
         Args:

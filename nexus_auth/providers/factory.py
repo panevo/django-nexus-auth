@@ -1,5 +1,3 @@
-from typing import Optional
-
 from django.utils.module_loading import import_string
 
 from nexus_auth.providers.base import OAuth2IdentityProvider
@@ -41,7 +39,7 @@ class ObjectFactory:
 class IdentityProviderFactory(ObjectFactory):
     """Factory for identity providers."""
 
-    def get(self, provider_type: str, **kwargs) -> Optional[OAuth2IdentityProvider]:
+    def get(self, provider_type: str, **kwargs) -> OAuth2IdentityProvider | None:
         """Get an identity provider instance.
 
         Args:

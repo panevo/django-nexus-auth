@@ -1,5 +1,3 @@
-from typing import Optional
-
 import requests
 
 from nexus_auth.exceptions import (
@@ -75,7 +73,7 @@ class MicrosoftEntraTenantOAuth2Provider(OAuth2IdentityProvider):
 
         return token_data["access_token"]
 
-    def fetch_user_email(self, access_token: str) -> Optional[str]:
+    def fetch_user_email(self, access_token: str) -> str | None:
         """
         Using the access token, get the user's email address by fetching from the Microsoft Graph API.
         Endpoint: https://learn.microsoft.com/en-us/graph/api/user-get?view=graph-rest-1.0&tabs=http
@@ -116,7 +114,7 @@ class MicrosoftEntraTenantOAuth2Provider(OAuth2IdentityProvider):
 
     def exchange_code_for_email(
         self, authorization_code: str, code_verifier: str, redirect_uri: str
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Exchange authorization code for an email address.
 
