@@ -99,6 +99,57 @@ NEXUS_AUTH = {
 }
 ```
 
+## Development
+
+### Running Tests
+
+Install the test dependencies and run the full test suite with pytest:
+
+```bash
+pip install -r requirements/base.txt
+pytest
+```
+
+To run the test matrix across multiple Python and Django versions, use [tox](https://tox.wiki/):
+
+```bash
+pip install tox
+tox
+```
+
+Run a specific environment, e.g. Python 3.12 with Django 4.2:
+
+```bash
+tox -e py312-django42
+```
+
+### Linting and Formatting
+
+This project uses [Ruff](https://docs.astral.sh/ruff/) for linting and formatting.
+
+```bash
+# Check for lint errors
+ruff check .
+
+# Auto-fix lint errors
+ruff check --fix .
+
+# Check formatting
+ruff format --check .
+
+# Apply formatting
+ruff format .
+```
+
+You can also run both checks together via the Makefile:
+
+```bash
+make lint    # ruff check
+make format  # ruff format
+```
+
+---
+
 ## Adding a new provider
 
 Define the provider object and builder class for your new provider.

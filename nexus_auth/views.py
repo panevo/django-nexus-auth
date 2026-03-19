@@ -1,6 +1,5 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.signals import user_logged_in
-
 from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -8,20 +7,19 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from nexus_auth.exceptions import (
+    EmailExtractionError,
+    MissingEmailFromProviderError,
     NexusAuthBaseException,
     NoActiveProviderError,
     NoAssociatedUserError,
     UserNotActiveError,
-    MissingEmailFromProviderError,
-    EmailExtractionError,
 )
+from nexus_auth.providers.base import OAuth2IdentityProvider
 from nexus_auth.serializers import (
     OAuth2ExchangeSerializer,
 )
 from nexus_auth.settings import nexus_settings
 from nexus_auth.utils import build_oauth_provider
-from nexus_auth.providers.base import OAuth2IdentityProvider
-from typing import Optional
 
 User = get_user_model()
 
@@ -123,14 +121,14 @@ class OAuthExchangeView(APIView):
             EmailExtractionError: If the email cannot be extracted from the provider
         """
         providers_config = nexus_settings.get_providers_config(request=request)
-        provider: Optional[OAuth2IdentityProvider] = build_oauth_provider(
+        provider: OAuth2IdentityProvider | None = build_oauth_provider(
             provider_type, providers_config
         )
         if not provider:
             raise NoActiveProviderError()
 
         try:
-            email: Optional[str] = provider.exchange_code_for_email(
+            email: str | None = provider.exchange_code_for_email(
                 authorization_code=authorization_code,
                 code_verifier=code_verifier,
                 redirect_uri=redirect_uri,

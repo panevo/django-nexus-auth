@@ -1,5 +1,3 @@
-from typing import Dict, Optional
-
 from rest_framework.request import Request
 
 from nexus_auth.exceptions import NoActiveProviderError
@@ -9,8 +7,8 @@ from nexus_auth.settings import nexus_settings
 
 
 def build_oauth_provider(
-    provider_type: str, providers_config: Dict[str, Dict[str, str]]
-) -> Optional[OAuth2IdentityProvider]:
+    provider_type: str, providers_config: dict[str, dict[str, str]]
+) -> OAuth2IdentityProvider | None:
     """Build an OAuth provider object by provider type.
 
     Args:
@@ -36,8 +34,8 @@ def build_oauth_provider(
 
 
 def load_providers_config(
-    request: Optional[Request] = None,
-) -> Dict[str, Dict[str, str]]:
+    request: Request | None = None,
+) -> dict[str, dict[str, str]]:
     """Load providers configuration.
 
     Args:
