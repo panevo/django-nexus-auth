@@ -5,7 +5,7 @@ setup(
     version="0.1.7",
     packages=find_packages(),
     install_requires=[
-        "Django>=4.2.19",
+        "Django>=5.2.17",
         "djangorestframework>=3.14.0",
         "djangorestframework-simplejwt>=5.4.0",
     ],

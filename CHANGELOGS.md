@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## Unreleased
+
+### Changed
+
+- Require Django 5.2.17 or newer. Django 4.2, 5.0 and 5.1 are no longer supported, and CI now tests Django 5.2 only.
+
 ## [0.1.7] - 2025-08-20
 
 ### Added
