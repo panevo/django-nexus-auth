@@ -117,10 +117,10 @@ pip install tox
 tox
 ```
 
-Run a specific environment, e.g. Python 3.12 with Django 4.2:
+Run a specific environment, e.g. Python 3.12 with Django 5.2:
 
 ```bash
-tox -e py312-django42
+tox -e py312-django52
 ```
 
 ### Linting and Formatting
