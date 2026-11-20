@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## [0.1.8] - Unreleased
+
+### Changed
+
+- Require Django 5.2.17 or newer, below 6.0. Django 4.2, 5.0 and 5.1 are no longer supported, and CI now tests Django 5.2 only.
+- The example project now requires Django 5.2.17 or newer and djangorestframework-simplejwt 5.4.0 or newer, matching the package.
+- CI now runs on pushes to `master`.
+
 ## [0.1.7] - 2025-08-20
 
 ### Added
