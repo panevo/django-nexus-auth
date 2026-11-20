@@ -2,10 +2,10 @@ from setuptools import find_packages, setup
 
 setup(
     name="django-nexus-auth",
-    version="0.1.7",
+    version="0.1.8",
     packages=find_packages(),
     install_requires=[
-        "Django>=5.2.17",
+        "Django>=5.2.17,<6.0",
         "djangorestframework>=3.14.0",
         "djangorestframework-simplejwt>=5.4.0",
     ],
